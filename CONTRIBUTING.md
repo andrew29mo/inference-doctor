@@ -21,3 +21,5 @@ The suite deliberately retains original synthetic reference values as JSON. Exac
 The repository has no project license selected yet. Do not assume this code is licensed under the licenses of its dependencies or sibling projects.
 
 Source mutation checks run targeted behavioral tests against isolated copies of the actual package and tools. The unchanged baseline must pass, and each deliberately faulty version must fail by assertion rather than import error or stale-source-hash rejection. Policy fixtures that relabel CPU computations test controller behavior only; they are not accelerator measurements.
+
+Real-model validation requires `requirements-real-model.txt`. Run `python tools/check_digits.py` and `python tools/run_mutations.py --real-model`; CI installs these dependencies and exercises all real-model tests. The four additional source faults test an incorrect exported Softmax axis, skipped timed dataset output checks, an omitted final row and held-out rows reaching fit. CoreML measurements are local actual backend runs; Linux/macOS CI timing smoke uses CPU and checks the committed CoreML evidence without claiming to reproduce accelerator timings.

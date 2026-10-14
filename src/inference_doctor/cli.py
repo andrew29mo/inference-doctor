@@ -32,6 +32,9 @@ def main(argv=None):
     parser.add_argument("model")
     parser.add_argument("--inputs", required=True, help="NPZ keyed by exact model input names")
     parser.add_argument("--reference", help="Independent NPZ keyed by exact model output names")
+    parser.add_argument("--labels", help="Classification dataset NPZ: labels, sample_ids, classes (int64)")
+    parser.add_argument("--batch-size", type=positive_int, help="Traverse all dataset rows; iterations means full timed passes")
+    parser.add_argument("--classification-output", help="Floating [batch, classes] output to score")
     parser.add_argument("--provider", action="append", help="Exact ORT provider name; repeat to compare (default CPUExecutionProvider)")
     parser.add_argument("--output", default="results/local/report")
     parser.add_argument("--iterations", type=positive_int, default=200)
@@ -44,12 +47,15 @@ def main(argv=None):
     parser.add_argument("--max-peak-mib", type=finite_nonnegative)
     parser.add_argument("--max-p95-ms", type=finite_nonnegative)
     args = parser.parse_args(argv)
+    if any((args.labels, args.batch_size, args.classification_output)) and not all((args.labels, args.batch_size, args.classification_output, args.reference)):
+        parser.error("dataset mode requires --labels, --batch-size, --classification-output and --reference")
     config = {k: getattr(args, k) for k in ("iterations", "warmup", "threads", "rtol", "atol")}
     config.update({k: str(Path(getattr(args, k)).resolve()) if getattr(args, k) else None
-                   for k in ("model", "inputs", "reference")})
+                   for k in ("model", "inputs", "reference", "labels")})
+    config.update(batch_size=args.batch_size, classification_output=args.classification_output)
     # Output must not overwrite source artifacts, even on an error-report run.
     targets = {(Path(args.output).resolve() / name).resolve() for name in ("report.json", "report.html")}
-    if any(Path(v) in targets for k, v in config.items() if k in ("model", "inputs", "reference") and v):
+    if any(Path(v) in targets for k, v in config.items() if k in ("model", "inputs", "reference", "labels") and v):
         parser.error("report output would overwrite an input artifact")
     providers = list(dict.fromkeys(args.provider or ["CPUExecutionProvider"]))
     report = diagnose(config, providers, args.repeats, args.timeout, args.max_peak_mib, args.max_p95_ms)

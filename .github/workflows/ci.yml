@@ -21,14 +21,18 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install fixed direct dependencies
-        run: python -m pip install -r requirements-dev.txt
+        run: python -m pip install -r requirements-dev.txt -r requirements-real-model.txt
       - name: Production CLI, actual ORT, independent references and deliberate faults
         run: python -m unittest discover -s tests -v
       - name: Optimized Python must preserve validation
         run: python -O -m unittest discover -s tests
       - name: Report provenance and repository publication hygiene
-        run: python tools/check_project.py
+        run: |
+          python tools/check_project.py
+          python tools/check_digits.py
       - name: Actual source mutations must fail behavioral assertions
-        run: python tools/run_mutations.py
+        run: python tools/run_mutations.py --real-model
       - name: Actual inference timing smoke, not a performance gate
         run: python tools/measure_suite.py --iterations 10 --repeats 1
+      - name: Complete held-out dataset timing smoke, not a performance gate
+        run: python tools/measure_digits.py --output results/local/digits-ci --batches 16 --iterations 1 --repeats 1

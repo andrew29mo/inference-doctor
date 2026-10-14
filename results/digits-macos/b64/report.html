@@ -1,0 +1,2565 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inference Doctor report</title><style>
+body{font:16px/1.6 system-ui,sans-serif;max-width:1120px;margin:40px auto;padding:0 24px;color:#172b3a;background:#f5f8fa}
+h1,h2{line-height:1.25}section{background:white;padding:24px;margin:20px 0;border:1px solid #dce4e8;border-radius:12px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}td,th{text-align:left;padding:10px;border-bottom:1px solid #dde5eb}
+.scroll{overflow:auto}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}li{margin:10px 0}.status{font-size:22px;font-weight:650}
+</style><h1>Inference Doctor</h1><p>Measured deployment evidence · v0.2.0</p>
+<section><div class="status">PASSED</div><p>2026-10-14T11:24:26.569200+00:00</p>
+<p>Model: model.onnx · Trials per provider: 4</p>
+<p>Reported CPU: Apple M5 Pro · Architecture: arm64</p>
+<p>Passed means supplied output references and configured budgets passed in these trials; it is not deployment certification.</p></section>
+<section><h2>Complete classification dataset</h2>
+<p>450 rows · maximum batch 64 · 8 calls/pass · final batch 2 rows · no padding.</p>
+<div class="scroll"><table><thead><tr><th>Requested primary</th><th>Correct</th><th>Accuracy</th><th>Inference µs/example</th><th>Validated wall µs/example</th></tr></thead><tbody><tr><td>CPUExecutionProvider</td><td>436/450</td><td>96.89%</td><td>0.117</td><td>0.754</td></tr><tr><td>CoreMLExecutionProvider</td><td>436/450</td><td>96.89%</td><td>1.210</td><td>1.938</td></tr></tbody></table></div>
+<p>Each per-example figure is the median of per-trial totals divided by all valid scored rows. Inference sums only synchronous call timers; validated wall also includes batching, output checks, classification and coverage hashes. Every timed pass covers the full dataset. Call percentiles below mix full and short final batches; raw row counts are retained. Accuracy is measured against supplied labels; PASS does not enforce an accuracy target or certify dataset provenance.</p></section>
+<section><h2>Measurements</h2><p>Requested providers are not physical-device identities. Peak RSS covers the validated worker only; CoreML helper processes and device memory are excluded. These numbers cannot compare total deployment memory.</p><div class="scroll"><table><thead><tr><th>Requested primary</th><th>Session median ms</th><th>First run median ms</th><th>Warm median ms</th><th>Warm p95 ms</th><th>Peak worker RSS MiB</th><th>Reference</th></tr></thead>
+<tbody><tr><td>CPUExecutionProvider</td><td>1.720</td><td>0.128</td><td>0.0067</td><td>0.0073</td><td>61.67</td><td>passed, passed, passed, passed</td></tr><tr><td>CoreMLExecutionProvider</td><td>39.976</td><td>2.890</td><td>0.0664</td><td>0.0925</td><td>70.30</td><td>passed, passed, passed, passed</td></tr></tbody></table></div><p>Warm percentiles pool raw calls. Per-trial p95, every sample, memory stages and EP events are in the evidence below.</p></section>
+<section><h2>Diagnosis</h2><ul><li><b>info · hardware_unverified</b> CoreMLExecutionProvider — Execution-provider attribution does not prove physical GPU/NPU/ANE execution.</li></ul></section><section><h2>Interpretation and limits</h2><ul><li>Model and data are snapshotted once by the controller; all child processes use the same snapshot. Copying and ONNX preflight are outside worker time/RSS measurements.</li><li>Latency is synchronous session.run wall time including Python dispatch, tensor transfers and output allocation. File loading and validation are outside each call timer.</li><li>All measured outputs are checked outside each call timer when a reference is supplied. These checks influence cache state and memory; this is a validated-call benchmark, not a raw kernel benchmark.</li><li>Session creation excludes Python/ORT imports and NPZ loading. First run is first use of a fresh session, not a cold OS/filesystem/device cache.</li><li>RSS is whole worker-process resident memory: interpreter, libraries, inputs, references, validation and runtime. It is not model-only allocation or total system/device memory. CoreML/helper-process memory is excluded.</li><li>OS high-water RSS covers process lifetime through the final checkpoint; parent 2 ms sampling also includes startup/exit but can miss short spikes. Stage RSS differences are observations, not causal allocations.</li><li>Profiling runs in a separate fresh session and is excluded from timing/RSS summaries. EP assignment may differ between sessions and does not identify physical CPU/GPU/ANE use.</li><li>Timing trials alternate provider order each round; all profiling runs follow all timing trials. Fixed inputs, OS scheduling, thermal state and system caches remain uncontrolled. No statistical speedup or cross-machine performance claim is made.</li><li>Numeric finite dense tensors and self-contained ONNX models on macOS/Linux only. Dataset accuracy requires supplied labels and a classification output; the tool does not establish arbitrary dataset/split provenance. No service-load test, device-memory accounting, or sandbox for untrusted models.</li></ul></section>
+<section><details><summary>Complete evidence and artifact hashes</summary><pre>{
+  &quot;schema_version&quot;: 2,
+  &quot;tool_version&quot;: &quot;0.2.0&quot;,
+  &quot;source_sha256&quot;: &quot;872d60bbf477d938c4547fe65662aabfa9f4159b1238c7f0ee6d40a40c0eb8e9&quot;,
+  &quot;generated_utc&quot;: &quot;2026-10-14T11:24:26.569200+00:00&quot;,
+  &quot;artifacts&quot;: {
+    &quot;model&quot;: {
+      &quot;name&quot;: &quot;model.onnx&quot;,
+      &quot;bytes&quot;: 9998,
+      &quot;sha256&quot;: &quot;ed13aa50654a0a56b0eab677bee20cdbbcc592754c4e1703122999ce30e294cf&quot;
+    },
+    &quot;inputs&quot;: {
+      &quot;name&quot;: &quot;inputs.npz&quot;,
+      &quot;bytes&quot;: 115456,
+      &quot;sha256&quot;: &quot;9579c9e2acc975fec70f41a01340808519ad16218a60221a9e2af68ee1e44b62&quot;
+    },
+    &quot;reference&quot;: {
+      &quot;name&quot;: &quot;reference.npz&quot;,
+      &quot;bytes&quot;: 36524,
+      &quot;sha256&quot;: &quot;0d324ae017e653145f1ec675efdcf7412848eb2f1bbc39757194c399013e3652&quot;
+    },
+    &quot;labels&quot;: {
+      &quot;name&quot;: &quot;labels.npz&quot;,
+      &quot;bytes&quot;: 8044,
+      &quot;sha256&quot;: &quot;df623a3fb1c97ab0781229f0d0c59ab8528a0cf879c085449b1e2e6f28d15e4e&quot;
+    }
+  },
+  &quot;settings&quot;: {
+    &quot;iterations&quot;: 5,
+    &quot;warmup&quot;: 5,
+    &quot;threads&quot;: 1,
+    &quot;rtol&quot;: 0.0001,
+    &quot;atol&quot;: 1e-05
+  },
+  &quot;repeats&quot;: 4,
+  &quot;budgets&quot;: {
+    &quot;max_peak_mib&quot;: null,
+    &quot;max_p95_ms&quot;: null
+  },
+  &quot;providers&quot;: [
+    {
+      &quot;requested&quot;: &quot;CPUExecutionProvider&quot;,
+      &quot;runs&quot;: [
+        {
+          &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+          &quot;available_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;AzureExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;registered_providers&quot;: [
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;environment&quot;: {
+            &quot;python&quot;: &quot;3.12.14&quot;,
+            &quot;numpy&quot;: &quot;1.26.4&quot;,
+            &quot;onnxruntime&quot;: &quot;1.31.0&quot;,
+            &quot;psutil&quot;: &quot;7.0.0&quot;,
+            &quot;os&quot;: &quot;Darwin&quot;,
+            &quot;os_release&quot;: &quot;27.0.0&quot;,
+            &quot;machine&quot;: &quot;arm64&quot;,
+            &quot;logical_cpus&quot;: 15,
+            &quot;python_optimization&quot;: 0
+          },
+          &quot;inputs&quot;: [
+            {
+              &quot;name&quot;: &quot;X&quot;,
+              &quot;shape&quot;: [
+                450,
+                64
+              ],
+              &quot;dtype&quot;: &quot;float32&quot;,
+              &quot;bytes&quot;: 115200
+            }
+          ],
+          &quot;session_creation_ms&quot;: 1.724875,
+          &quot;first_run_ms&quot;: 0.125417,
+          &quot;latency_samples_ms&quot;: [
+            0.007167,
+            0.006709,
+            0.006625,
+            0.00675,
+            0.006833,
+            0.006917,
+            0.00725,
+            0.005209,
+            0.007291,
+            0.0065,
+            0.006875,
+            0.007042,
+            0.006833,
+            0.007125,
+            0.007083,
+            0.004375,
+            0.007042,
+            0.006791,
+            0.006459,
+            0.006667,
+            0.006708,
+            0.007,
+            0.006833,
+            0.00475,
+            0.006792,
+            0.006792,
+            0.006917,
+            0.006875,
+            0.00675,
+            0.00675,
+            0.007292,
+            0.004625,
+            0.006625,
+            0.006625,
+            0.007375,
+            0.007208,
+            0.006875,
+            0.006666,
+            0.006625,
+            0.005
+          ],
+          &quot;correctness&quot;: {
+            &quot;status&quot;: &quot;passed&quot;,
+            &quot;checked_calls&quot;: 54,
+            &quot;outputs&quot;: [
+              {
+                &quot;name&quot;: &quot;logits&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 0.0
+              },
+              {
+                &quot;name&quot;: &quot;probabilities&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 3.552713678800501e-15
+              }
+            ]
+          },
+          &quot;memory&quot;: {
+            &quot;rss_bytes_by_stage&quot;: {
+              &quot;before_numpy_ort_import&quot;: 20103168,
+              &quot;after_import&quot;: 55853056,
+              &quot;after_data_load&quot;: 56885248,
+              &quot;after_session&quot;: 64028672,
+              &quot;after_first_run&quot;: 64176128,
+              &quot;after_dataset_evaluation&quot;: 64274432,
+              &quot;after_warmup&quot;: 64274432,
+              &quot;after_work&quot;: 64274432
+            },
+            &quot;process_high_water_rss_bytes&quot;: 64274432,
+            &quot;parent_sampled_peak_rss_bytes&quot;: 64667648,
+            &quot;parent_rss_samples&quot;: 48,
+            &quot;parent_sampling_interval_ms&quot;: 2
+          },
+          &quot;profile&quot;: null,
+          &quot;dataset&quot;: {
+            &quot;metadata&quot;: {
+              &quot;rows&quot;: 450,
+              &quot;batch_size&quot;: 64,
+              &quot;batches_per_pass&quot;: 8,
+              &quot;last_batch_rows&quot;: 2,
+              &quot;classification_output&quot;: &quot;probabilities&quot;,
+              &quot;classes&quot;: [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              &quot;reference_correct&quot;: 436,
+              &quot;reference_accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;reference_predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;
+            },
+            &quot;evaluation&quot;: {
+              &quot;valid_rows&quot;: 450,
+              &quot;calls&quot;: 8,
+              &quot;correct&quot;: 436,
+              &quot;accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+              &quot;inference_ms&quot;: null,
+              &quot;validated_wall_ms&quot;: 0.437833
+            },
+            &quot;timed_passes&quot;: [
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.05346,
+                &quot;validated_wall_ms&quot;: 0.343875
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.053124,
+                &quot;validated_wall_ms&quot;: 0.3435
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.05225,
+                &quot;validated_wall_ms&quot;: 0.337167
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.052793,
+                &quot;validated_wall_ms&quot;: 0.33725
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.052999,
+                &quot;validated_wall_ms&quot;: 0.327083
+              }
+            ]
+          },
+          &quot;latency_sample_rows&quot;: [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          &quot;worker_wall_ms&quot;: 123.35158299538307
+        },
+        {
+          &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+          &quot;available_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;AzureExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;registered_providers&quot;: [
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;environment&quot;: {
+            &quot;python&quot;: &quot;3.12.14&quot;,
+            &quot;numpy&quot;: &quot;1.26.4&quot;,
+            &quot;onnxruntime&quot;: &quot;1.31.0&quot;,
+            &quot;psutil&quot;: &quot;7.0.0&quot;,
+            &quot;os&quot;: &quot;Darwin&quot;,
+            &quot;os_release&quot;: &quot;27.0.0&quot;,
+            &quot;machine&quot;: &quot;arm64&quot;,
+            &quot;logical_cpus&quot;: 15,
+            &quot;python_optimization&quot;: 0
+          },
+          &quot;inputs&quot;: [
+            {
+              &quot;name&quot;: &quot;X&quot;,
+              &quot;shape&quot;: [
+                450,
+                64
+              ],
+              &quot;dtype&quot;: &quot;float32&quot;,
+              &quot;bytes&quot;: 115200
+            }
+          ],
+          &quot;session_creation_ms&quot;: 1.715459,
+          &quot;first_run_ms&quot;: 0.115333,
+          &quot;latency_samples_ms&quot;: [
+            0.007292,
+            0.006917,
+            0.006875,
+            0.006833,
+            0.006708,
+            0.006791,
+            0.006666,
+            0.00475,
+            0.007125,
+            0.00675,
+            0.006792,
+            0.007208,
+            0.007083,
+            0.006834,
+            0.006708,
+            0.005583,
+            0.007,
+            0.00675,
+            0.007167,
+            0.007083,
+            0.007667,
+            0.006542,
+            0.007334,
+            0.0045,
+            0.00675,
+            0.00675,
+            0.007,
+            0.00675,
+            0.0065,
+            0.006792,
+            0.006834,
+            0.004583,
+            0.006917,
+            0.006875,
+            0.00725,
+            0.006541,
+            0.006875,
+            0.006833,
+            0.006583,
+            0.004709
+          ],
+          &quot;correctness&quot;: {
+            &quot;status&quot;: &quot;passed&quot;,
+            &quot;checked_calls&quot;: 54,
+            &quot;outputs&quot;: [
+              {
+                &quot;name&quot;: &quot;logits&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 0.0
+              },
+              {
+                &quot;name&quot;: &quot;probabilities&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 3.552713678800501e-15
+              }
+            ]
+          },
+          &quot;memory&quot;: {
+            &quot;rss_bytes_by_stage&quot;: {
+              &quot;before_numpy_ort_import&quot;: 19922944,
+              &quot;after_import&quot;: 55771136,
+              &quot;after_data_load&quot;: 56819712,
+              &quot;after_session&quot;: 63946752,
+              &quot;after_first_run&quot;: 64094208,
+              &quot;after_dataset_evaluation&quot;: 64192512,
+              &quot;after_warmup&quot;: 64192512,
+              &quot;after_work&quot;: 64192512
+            },
+            &quot;process_high_water_rss_bytes&quot;: 64192512,
+            &quot;parent_sampled_peak_rss_bytes&quot;: 64290816,
+            &quot;parent_rss_samples&quot;: 47,
+            &quot;parent_sampling_interval_ms&quot;: 2
+          },
+          &quot;profile&quot;: null,
+          &quot;dataset&quot;: {
+            &quot;metadata&quot;: {
+              &quot;rows&quot;: 450,
+              &quot;batch_size&quot;: 64,
+              &quot;batches_per_pass&quot;: 8,
+              &quot;last_batch_rows&quot;: 2,
+              &quot;classification_output&quot;: &quot;probabilities&quot;,
+              &quot;classes&quot;: [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              &quot;reference_correct&quot;: 436,
+              &quot;reference_accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;reference_predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;
+            },
+            &quot;evaluation&quot;: {
+              &quot;valid_rows&quot;: 450,
+              &quot;calls&quot;: 8,
+              &quot;correct&quot;: 436,
+              &quot;accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+              &quot;inference_ms&quot;: null,
+              &quot;validated_wall_ms&quot;: 0.437042
+            },
+            &quot;timed_passes&quot;: [
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.052832000000000004,
+                &quot;validated_wall_ms&quot;: 0.356458
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.054083,
+                &quot;validated_wall_ms&quot;: 0.353875
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.054043,
+                &quot;validated_wall_ms&quot;: 0.334541
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.051959,
+                &quot;validated_wall_ms&quot;: 0.344458
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.052583,
+                &quot;validated_wall_ms&quot;: 0.340083
+              }
+            ]
+          },
+          &quot;latency_sample_rows&quot;: [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          &quot;worker_wall_ms&quot;: 120.64587499480695
+        },
+        {
+          &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+          &quot;available_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;AzureExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;registered_providers&quot;: [
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;environment&quot;: {
+            &quot;python&quot;: &quot;3.12.14&quot;,
+            &quot;numpy&quot;: &quot;1.26.4&quot;,
+            &quot;onnxruntime&quot;: &quot;1.31.0&quot;,
+            &quot;psutil&quot;: &quot;7.0.0&quot;,
+            &quot;os&quot;: &quot;Darwin&quot;,
+            &quot;os_release&quot;: &quot;27.0.0&quot;,
+            &quot;machine&quot;: &quot;arm64&quot;,
+            &quot;logical_cpus&quot;: 15,
+            &quot;python_optimization&quot;: 0
+          },
+          &quot;inputs&quot;: [
+            {
+              &quot;name&quot;: &quot;X&quot;,
+              &quot;shape&quot;: [
+                450,
+                64
+              ],
+              &quot;dtype&quot;: &quot;float32&quot;,
+              &quot;bytes&quot;: 115200
+            }
+          ],
+          &quot;session_creation_ms&quot;: 1.986375,
+          &quot;first_run_ms&quot;: 0.151416,
+          &quot;latency_samples_ms&quot;: [
+            0.006791,
+            0.006875,
+            0.006542,
+            0.006416,
+            0.006542,
+            0.006417,
+            0.006458,
+            0.004333,
+            0.006791,
+            0.006458,
+            0.006708,
+            0.006625,
+            0.006625,
+            0.006417,
+            0.006542,
+            0.004333,
+            0.006708,
+            0.006375,
+            0.006417,
+            0.006416,
+            0.006583,
+            0.0065,
+            0.006834,
+            0.004084,
+            0.006708,
+            0.006416,
+            0.006542,
+            0.006542,
+            0.0065,
+            0.006417,
+            0.006833,
+            0.005041,
+            0.006708,
+            0.006542,
+            0.006792,
+            0.006583,
+            0.006459,
+            0.006458,
+            0.006459,
+            0.0045
+          ],
+          &quot;correctness&quot;: {
+            &quot;status&quot;: &quot;passed&quot;,
+            &quot;checked_calls&quot;: 54,
+            &quot;outputs&quot;: [
+              {
+                &quot;name&quot;: &quot;logits&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 0.0
+              },
+              {
+                &quot;name&quot;: &quot;probabilities&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 3.552713678800501e-15
+              }
+            ]
+          },
+          &quot;memory&quot;: {
+            &quot;rss_bytes_by_stage&quot;: {
+              &quot;before_numpy_ort_import&quot;: 20021248,
+              &quot;after_import&quot;: 55640064,
+              &quot;after_data_load&quot;: 56705024,
+              &quot;after_session&quot;: 63799296,
+              &quot;after_first_run&quot;: 63979520,
+              &quot;after_dataset_evaluation&quot;: 64077824,
+              &quot;after_warmup&quot;: 64077824,
+              &quot;after_work&quot;: 64077824
+            },
+            &quot;process_high_water_rss_bytes&quot;: 64077824,
+            &quot;parent_sampled_peak_rss_bytes&quot;: 64159744,
+            &quot;parent_rss_samples&quot;: 47,
+            &quot;parent_sampling_interval_ms&quot;: 2
+          },
+          &quot;profile&quot;: null,
+          &quot;dataset&quot;: {
+            &quot;metadata&quot;: {
+              &quot;rows&quot;: 450,
+              &quot;batch_size&quot;: 64,
+              &quot;batches_per_pass&quot;: 8,
+              &quot;last_batch_rows&quot;: 2,
+              &quot;classification_output&quot;: &quot;probabilities&quot;,
+              &quot;classes&quot;: [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              &quot;reference_correct&quot;: 436,
+              &quot;reference_accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;reference_predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;
+            },
+            &quot;evaluation&quot;: {
+              &quot;valid_rows&quot;: 450,
+              &quot;calls&quot;: 8,
+              &quot;correct&quot;: 436,
+              &quot;accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+              &quot;inference_ms&quot;: null,
+              &quot;validated_wall_ms&quot;: 0.452625
+            },
+            &quot;timed_passes&quot;: [
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.050374,
+                &quot;validated_wall_ms&quot;: 0.349959
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.050499,
+                &quot;validated_wall_ms&quot;: 0.337834
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.049917,
+                &quot;validated_wall_ms&quot;: 0.341084
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.050999,
+                &quot;validated_wall_ms&quot;: 0.334583
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.050501000000000004,
+                &quot;validated_wall_ms&quot;: 0.33875
+              }
+            ]
+          },
+          &quot;latency_sample_rows&quot;: [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          &quot;worker_wall_ms&quot;: 122.82354102353565
+        },
+        {
+          &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+          &quot;available_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;AzureExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;registered_providers&quot;: [
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;environment&quot;: {
+            &quot;python&quot;: &quot;3.12.14&quot;,
+            &quot;numpy&quot;: &quot;1.26.4&quot;,
+            &quot;onnxruntime&quot;: &quot;1.31.0&quot;,
+            &quot;psutil&quot;: &quot;7.0.0&quot;,
+            &quot;os&quot;: &quot;Darwin&quot;,
+            &quot;os_release&quot;: &quot;27.0.0&quot;,
+            &quot;machine&quot;: &quot;arm64&quot;,
+            &quot;logical_cpus&quot;: 15,
+            &quot;python_optimization&quot;: 0
+          },
+          &quot;inputs&quot;: [
+            {
+              &quot;name&quot;: &quot;X&quot;,
+              &quot;shape&quot;: [
+                450,
+                64
+              ],
+              &quot;dtype&quot;: &quot;float32&quot;,
+              &quot;bytes&quot;: 115200
+            }
+          ],
+          &quot;session_creation_ms&quot;: 1.697959,
+          &quot;first_run_ms&quot;: 0.130584,
+          &quot;latency_samples_ms&quot;: [
+            0.007083,
+            0.007416,
+            0.007459,
+            0.006625,
+            0.007,
+            0.006792,
+            0.006166,
+            0.004458,
+            0.007125,
+            0.006709,
+            0.0065,
+            0.007334,
+            0.007125,
+            0.006584,
+            0.00675,
+            0.004625,
+            0.007917,
+            0.007041,
+            0.006792,
+            0.006667,
+            0.006916,
+            0.006459,
+            0.006458,
+            0.004541,
+            0.0075,
+            0.006709,
+            0.006791,
+            0.006417,
+            0.006917,
+            0.006834,
+            0.006875,
+            0.004417,
+            0.007542,
+            0.006625,
+            0.007167,
+            0.006833,
+            0.006584,
+            0.006542,
+            0.006333,
+            0.00425
+          ],
+          &quot;correctness&quot;: {
+            &quot;status&quot;: &quot;passed&quot;,
+            &quot;checked_calls&quot;: 54,
+            &quot;outputs&quot;: [
+              {
+                &quot;name&quot;: &quot;logits&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 0.0
+              },
+              {
+                &quot;name&quot;: &quot;probabilities&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 3.552713678800501e-15
+              }
+            ]
+          },
+          &quot;memory&quot;: {
+            &quot;rss_bytes_by_stage&quot;: {
+              &quot;before_numpy_ort_import&quot;: 20021248,
+              &quot;after_import&quot;: 55754752,
+              &quot;after_data_load&quot;: 56885248,
+              &quot;after_session&quot;: 63979520,
+              &quot;after_first_run&quot;: 64176128,
+              &quot;after_dataset_evaluation&quot;: 64290816,
+              &quot;after_warmup&quot;: 64290816,
+              &quot;after_work&quot;: 64290816
+            },
+            &quot;process_high_water_rss_bytes&quot;: 64290816,
+            &quot;parent_sampled_peak_rss_bytes&quot;: 64372736,
+            &quot;parent_rss_samples&quot;: 49,
+            &quot;parent_sampling_interval_ms&quot;: 2
+          },
+          &quot;profile&quot;: null,
+          &quot;dataset&quot;: {
+            &quot;metadata&quot;: {
+              &quot;rows&quot;: 450,
+              &quot;batch_size&quot;: 64,
+              &quot;batches_per_pass&quot;: 8,
+              &quot;last_batch_rows&quot;: 2,
+              &quot;classification_output&quot;: &quot;probabilities&quot;,
+              &quot;classes&quot;: [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              &quot;reference_correct&quot;: 436,
+              &quot;reference_accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;reference_predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;
+            },
+            &quot;evaluation&quot;: {
+              &quot;valid_rows&quot;: 450,
+              &quot;calls&quot;: 8,
+              &quot;correct&quot;: 436,
+              &quot;accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+              &quot;inference_ms&quot;: null,
+              &quot;validated_wall_ms&quot;: 0.43775
+            },
+            &quot;timed_passes&quot;: [
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.052999,
+                &quot;validated_wall_ms&quot;: 0.317291
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.052752,
+                &quot;validated_wall_ms&quot;: 0.3275
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.052791000000000005,
+                &quot;validated_wall_ms&quot;: 0.3035
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.05246,
+                &quot;validated_wall_ms&quot;: 0.345375
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.051876,
+                &quot;validated_wall_ms&quot;: 0.346708
+              }
+            ]
+          },
+          &quot;latency_sample_rows&quot;: [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          &quot;worker_wall_ms&quot;: 126.69962499057874
+        }
+      ],
+      &quot;profile&quot;: {
+        &quot;provider_kernel_events&quot;: {
+          &quot;CPUExecutionProvider&quot;: 27
+        },
+        &quot;unattributed_kernel_events&quot;: 0,
+        &quot;nodes&quot;: [
+          {
+            &quot;name&quot;: &quot;fused dense1_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 18
+          },
+          {
+            &quot;name&quot;: &quot;dense2_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 3
+          },
+          {
+            &quot;name&quot;: &quot;softmax_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 6
+          },
+          {
+            &quot;name&quot;: &quot;fused dense1_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 5
+          },
+          {
+            &quot;name&quot;: &quot;dense2_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 2
+          },
+          {
+            &quot;name&quot;: &quot;softmax_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 2
+          },
+          {
+            &quot;name&quot;: &quot;fused dense1_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 3
+          },
+          {
+            &quot;name&quot;: &quot;dense2_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 2
+          },
+          {
+            &quot;name&quot;: &quot;softmax_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 1
+          },
+          {
+            &quot;name&quot;: &quot;fused dense1_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 3
+          },
+          {
+            &quot;name&quot;: &quot;dense2_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 2
+          },
+          {
+            &quot;name&quot;: &quot;softmax_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 1
+          },
+          {
+            &quot;name&quot;: &quot;fused dense1_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 3
+          },
+          {
+            &quot;name&quot;: &quot;dense2_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 2
+          },
+          {
+            &quot;name&quot;: &quot;softmax_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 1
+          },
+          {
+            &quot;name&quot;: &quot;fused dense1_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 3
+          },
+          {
+            &quot;name&quot;: &quot;dense2_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 2
+          },
+          {
+            &quot;name&quot;: &quot;softmax_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 1
+          },
+          {
+            &quot;name&quot;: &quot;fused dense1_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 3
+          },
+          {
+            &quot;name&quot;: &quot;dense2_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 2
+          },
+          {
+            &quot;name&quot;: &quot;softmax_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 1
+          },
+          {
+            &quot;name&quot;: &quot;fused dense1_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 3
+          },
+          {
+            &quot;name&quot;: &quot;dense2_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 2
+          },
+          {
+            &quot;name&quot;: &quot;softmax_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 1
+          },
+          {
+            &quot;name&quot;: &quot;fused dense1_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 2
+          },
+          {
+            &quot;name&quot;: &quot;dense2_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 2
+          },
+          {
+            &quot;name&quot;: &quot;softmax_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+            &quot;duration_us&quot;: 1
+          }
+        ],
+        &quot;scope&quot;: &quot;Separate session: first batch and one complete dataset pass, including short tail; optimized/fused EP events, not physical-device proof.&quot;,
+        &quot;dataset_evaluation&quot;: {
+          &quot;valid_rows&quot;: 450,
+          &quot;calls&quot;: 8,
+          &quot;correct&quot;: 436,
+          &quot;accuracy&quot;: 0.9688888888888889,
+          &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+          &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+          &quot;inference_ms&quot;: null,
+          &quot;validated_wall_ms&quot;: 0.48
+        }
+      },
+      &quot;summary&quot;: {
+        &quot;session_creation_ms&quot;: {
+          &quot;count&quot;: 4,
+          &quot;min&quot;: 1.697959,
+          &quot;median&quot;: 1.720167,
+          &quot;p95&quot;: 1.94715,
+          &quot;p99&quot;: 1.97853,
+          &quot;max&quot;: 1.986375
+        },
+        &quot;first_run_ms&quot;: {
+          &quot;count&quot;: 4,
+          &quot;min&quot;: 0.115333,
+          &quot;median&quot;: 0.12800050000000002,
+          &quot;p95&quot;: 0.14829119999999998,
+          &quot;p99&quot;: 0.15079104,
+          &quot;max&quot;: 0.151416
+        },
+        &quot;pooled_warm_latency_ms&quot;: {
+          &quot;count&quot;: 160,
+          &quot;min&quot;: 0.004084,
+          &quot;median&quot;: 0.006729499999999999,
+          &quot;p95&quot;: 0.007334,
+          &quot;p99&quot;: 0.007593249999999999,
+          &quot;max&quot;: 0.007917
+        },
+        &quot;per_run_p95_ms&quot;: [
+          0.0072910499999999994,
+          0.0072940999999999995,
+          0.006833049999999999,
+          0.007502099999999999
+        ],
+        &quot;peak_process_rss_bytes&quot;: 64667648,
+        &quot;dataset&quot;: {
+          &quot;per_trial_inference_us_per_example&quot;: [
+            0.11761155555555554,
+            0.118,
+            0.1121288888888889,
+            0.11683466666666666
+          ],
+          &quot;per_trial_validated_wall_us_per_example&quot;: [
+            0.7506111111111111,
+            0.7686288888888889,
+            0.7565377777777778,
+            0.7290551111111111
+          ],
+          &quot;accuracy&quot;: 0.9688888888888889,
+          &quot;correct&quot;: 436,
+          &quot;test_rows&quot;: 450
+        }
+      },
+      &quot;profile_correctness&quot;: {
+        &quot;status&quot;: &quot;passed&quot;,
+        &quot;checked_calls&quot;: 9,
+        &quot;outputs&quot;: [
+          {
+            &quot;name&quot;: &quot;logits&quot;,
+            &quot;shape&quot;: [
+              2,
+              10
+            ],
+            &quot;dtype&quot;: &quot;float32&quot;,
+            &quot;passed&quot;: true,
+            &quot;max_absolute_error&quot;: 0.0
+          },
+          {
+            &quot;name&quot;: &quot;probabilities&quot;,
+            &quot;shape&quot;: [
+              2,
+              10
+            ],
+            &quot;dtype&quot;: &quot;float32&quot;,
+            &quot;passed&quot;: true,
+            &quot;max_absolute_error&quot;: 3.552713678800501e-15
+          }
+        ]
+      }
+    },
+    {
+      &quot;requested&quot;: &quot;CoreMLExecutionProvider&quot;,
+      &quot;runs&quot;: [
+        {
+          &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+          &quot;available_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;AzureExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;registered_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;environment&quot;: {
+            &quot;python&quot;: &quot;3.12.14&quot;,
+            &quot;numpy&quot;: &quot;1.26.4&quot;,
+            &quot;onnxruntime&quot;: &quot;1.31.0&quot;,
+            &quot;psutil&quot;: &quot;7.0.0&quot;,
+            &quot;os&quot;: &quot;Darwin&quot;,
+            &quot;os_release&quot;: &quot;27.0.0&quot;,
+            &quot;machine&quot;: &quot;arm64&quot;,
+            &quot;logical_cpus&quot;: 15,
+            &quot;python_optimization&quot;: 0
+          },
+          &quot;inputs&quot;: [
+            {
+              &quot;name&quot;: &quot;X&quot;,
+              &quot;shape&quot;: [
+                450,
+                64
+              ],
+              &quot;dtype&quot;: &quot;float32&quot;,
+              &quot;bytes&quot;: 115200
+            }
+          ],
+          &quot;session_creation_ms&quot;: 40.955334,
+          &quot;first_run_ms&quot;: 4.115458,
+          &quot;latency_samples_ms&quot;: [
+            0.056959,
+            0.052042,
+            0.080208,
+            0.1175,
+            0.063042,
+            0.061958,
+            0.07,
+            0.089667,
+            0.090792,
+            0.082792,
+            0.099291,
+            0.088458,
+            0.091291,
+            0.08125,
+            0.064667,
+            0.095167,
+            0.117542,
+            0.063875,
+            0.092625,
+            0.061625,
+            0.060666,
+            0.06975,
+            0.064166,
+            0.086625,
+            0.084458,
+            0.063333,
+            0.057958,
+            0.061333,
+            0.068583,
+            0.074125,
+            0.069166,
+            0.0615,
+            0.064667,
+            0.053583,
+            0.048167,
+            0.053167,
+            0.05425,
+            0.065708,
+            0.066416,
+            0.06425
+          ],
+          &quot;correctness&quot;: {
+            &quot;status&quot;: &quot;passed&quot;,
+            &quot;checked_calls&quot;: 54,
+            &quot;outputs&quot;: [
+              {
+                &quot;name&quot;: &quot;logits&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 1.52587890625e-05
+              },
+              {
+                &quot;name&quot;: &quot;probabilities&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 5.062616992290714e-14
+              }
+            ]
+          },
+          &quot;memory&quot;: {
+            &quot;rss_bytes_by_stage&quot;: {
+              &quot;before_numpy_ort_import&quot;: 20086784,
+              &quot;after_import&quot;: 55885824,
+              &quot;after_data_load&quot;: 56901632,
+              &quot;after_session&quot;: 72400896,
+              &quot;after_first_run&quot;: 73170944,
+              &quot;after_dataset_evaluation&quot;: 73383936,
+              &quot;after_warmup&quot;: 73383936,
+              &quot;after_work&quot;: 73383936
+            },
+            &quot;process_high_water_rss_bytes&quot;: 73383936,
+            &quot;parent_sampled_peak_rss_bytes&quot;: 73416704,
+            &quot;parent_rss_samples&quot;: 69,
+            &quot;parent_sampling_interval_ms&quot;: 2
+          },
+          &quot;profile&quot;: null,
+          &quot;dataset&quot;: {
+            &quot;metadata&quot;: {
+              &quot;rows&quot;: 450,
+              &quot;batch_size&quot;: 64,
+              &quot;batches_per_pass&quot;: 8,
+              &quot;last_batch_rows&quot;: 2,
+              &quot;classification_output&quot;: &quot;probabilities&quot;,
+              &quot;classes&quot;: [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              &quot;reference_correct&quot;: 436,
+              &quot;reference_accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;reference_predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;
+            },
+            &quot;evaluation&quot;: {
+              &quot;valid_rows&quot;: 450,
+              &quot;calls&quot;: 8,
+              &quot;correct&quot;: 436,
+              &quot;accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+              &quot;inference_ms&quot;: null,
+              &quot;validated_wall_ms&quot;: 1.3085
+            },
+            &quot;timed_passes&quot;: [
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.591376,
+                &quot;validated_wall_ms&quot;: 0.967
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.693708,
+                &quot;validated_wall_ms&quot;: 1.10425
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.616874,
+                &quot;validated_wall_ms&quot;: 0.980709
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.540456,
+                &quot;validated_wall_ms&quot;: 0.839
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.470208,
+                &quot;validated_wall_ms&quot;: 0.76375
+              }
+            ]
+          },
+          &quot;latency_sample_rows&quot;: [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          &quot;worker_wall_ms&quot;: 178.44020799384452
+        },
+        {
+          &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+          &quot;available_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;AzureExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;registered_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;environment&quot;: {
+            &quot;python&quot;: &quot;3.12.14&quot;,
+            &quot;numpy&quot;: &quot;1.26.4&quot;,
+            &quot;onnxruntime&quot;: &quot;1.31.0&quot;,
+            &quot;psutil&quot;: &quot;7.0.0&quot;,
+            &quot;os&quot;: &quot;Darwin&quot;,
+            &quot;os_release&quot;: &quot;27.0.0&quot;,
+            &quot;machine&quot;: &quot;arm64&quot;,
+            &quot;logical_cpus&quot;: 15,
+            &quot;python_optimization&quot;: 0
+          },
+          &quot;inputs&quot;: [
+            {
+              &quot;name&quot;: &quot;X&quot;,
+              &quot;shape&quot;: [
+                450,
+                64
+              ],
+              &quot;dtype&quot;: &quot;float32&quot;,
+              &quot;bytes&quot;: 115200
+            }
+          ],
+          &quot;session_creation_ms&quot;: 37.662667,
+          &quot;first_run_ms&quot;: 2.589709,
+          &quot;latency_samples_ms&quot;: [
+            0.049666,
+            0.054959,
+            0.069459,
+            0.074542,
+            0.061583,
+            0.065125,
+            0.064375,
+            0.066291,
+            0.090458,
+            0.055958,
+            0.052708,
+            0.052875,
+            0.04775,
+            0.046458,
+            0.046584,
+            0.055958,
+            0.080167,
+            0.059709,
+            0.073709,
+            0.113375,
+            0.06675,
+            0.072208,
+            0.087416,
+            0.08075,
+            0.077541,
+            0.076667,
+            0.074,
+            0.068,
+            0.06875,
+            0.053375,
+            0.046375,
+            0.069167,
+            0.066083,
+            0.04625,
+            0.068167,
+            0.083459,
+            0.081625,
+            0.052209,
+            0.054125,
+            0.066416
+          ],
+          &quot;correctness&quot;: {
+            &quot;status&quot;: &quot;passed&quot;,
+            &quot;checked_calls&quot;: 54,
+            &quot;outputs&quot;: [
+              {
+                &quot;name&quot;: &quot;logits&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 1.52587890625e-05
+              },
+              {
+                &quot;name&quot;: &quot;probabilities&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 5.062616992290714e-14
+              }
+            ]
+          },
+          &quot;memory&quot;: {
+            &quot;rss_bytes_by_stage&quot;: {
+              &quot;before_numpy_ort_import&quot;: 20037632,
+              &quot;after_import&quot;: 55771136,
+              &quot;after_data_load&quot;: 56803328,
+              &quot;after_session&quot;: 72417280,
+              &quot;after_first_run&quot;: 73154560,
+              &quot;after_dataset_evaluation&quot;: 73367552,
+              &quot;after_warmup&quot;: 73383936,
+              &quot;after_work&quot;: 73416704
+            },
+            &quot;process_high_water_rss_bytes&quot;: 73416704,
+            &quot;parent_sampled_peak_rss_bytes&quot;: 73449472,
+            &quot;parent_rss_samples&quot;: 65,
+            &quot;parent_sampling_interval_ms&quot;: 2
+          },
+          &quot;profile&quot;: null,
+          &quot;dataset&quot;: {
+            &quot;metadata&quot;: {
+              &quot;rows&quot;: 450,
+              &quot;batch_size&quot;: 64,
+              &quot;batches_per_pass&quot;: 8,
+              &quot;last_batch_rows&quot;: 2,
+              &quot;classification_output&quot;: &quot;probabilities&quot;,
+              &quot;classes&quot;: [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              &quot;reference_correct&quot;: 436,
+              &quot;reference_accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;reference_predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;
+            },
+            &quot;evaluation&quot;: {
+              &quot;valid_rows&quot;: 450,
+              &quot;calls&quot;: 8,
+              &quot;correct&quot;: 436,
+              &quot;accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+              &quot;inference_ms&quot;: null,
+              &quot;validated_wall_ms&quot;: 1.064083
+            },
+            &quot;timed_passes&quot;: [
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.506,
+                &quot;validated_wall_ms&quot;: 0.799709
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.448749,
+                &quot;validated_wall_ms&quot;: 0.730583
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.634084,
+                &quot;validated_wall_ms&quot;: 1.010667
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.533875,
+                &quot;validated_wall_ms&quot;: 0.822875
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.5183340000000001,
+                &quot;validated_wall_ms&quot;: 0.846958
+              }
+            ]
+          },
+          &quot;latency_sample_rows&quot;: [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          &quot;worker_wall_ms&quot;: 167.9312500054948
+        },
+        {
+          &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+          &quot;available_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;AzureExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;registered_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;environment&quot;: {
+            &quot;python&quot;: &quot;3.12.14&quot;,
+            &quot;numpy&quot;: &quot;1.26.4&quot;,
+            &quot;onnxruntime&quot;: &quot;1.31.0&quot;,
+            &quot;psutil&quot;: &quot;7.0.0&quot;,
+            &quot;os&quot;: &quot;Darwin&quot;,
+            &quot;os_release&quot;: &quot;27.0.0&quot;,
+            &quot;machine&quot;: &quot;arm64&quot;,
+            &quot;logical_cpus&quot;: 15,
+            &quot;python_optimization&quot;: 0
+          },
+          &quot;inputs&quot;: [
+            {
+              &quot;name&quot;: &quot;X&quot;,
+              &quot;shape&quot;: [
+                450,
+                64
+              ],
+              &quot;dtype&quot;: &quot;float32&quot;,
+              &quot;bytes&quot;: 115200
+            }
+          ],
+          &quot;session_creation_ms&quot;: 39.446833,
+          &quot;first_run_ms&quot;: 2.935834,
+          &quot;latency_samples_ms&quot;: [
+            0.067375,
+            0.062625,
+            0.080584,
+            0.087208,
+            0.070708,
+            0.090042,
+            0.07475,
+            0.074333,
+            0.09725,
+            0.06,
+            0.052666,
+            0.053667,
+            0.050083,
+            0.056375,
+            0.050833,
+            0.064833,
+            0.082791,
+            0.066625,
+            0.065375,
+            0.064333,
+            0.050875,
+            0.050958,
+            0.052166,
+            0.069041,
+            0.076167,
+            0.086292,
+            0.071041,
+            0.072792,
+            0.071875,
+            0.072459,
+            0.05625,
+            0.064,
+            0.071875,
+            0.050958,
+            0.051708,
+            0.052041,
+            0.079792,
+            0.058417,
+            0.053083,
+            0.059708
+          ],
+          &quot;correctness&quot;: {
+            &quot;status&quot;: &quot;passed&quot;,
+            &quot;checked_calls&quot;: 54,
+            &quot;outputs&quot;: [
+              {
+                &quot;name&quot;: &quot;logits&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 1.52587890625e-05
+              },
+              {
+                &quot;name&quot;: &quot;probabilities&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 5.062616992290714e-14
+              }
+            ]
+          },
+          &quot;memory&quot;: {
+            &quot;rss_bytes_by_stage&quot;: {
+              &quot;before_numpy_ort_import&quot;: 19922944,
+              &quot;after_import&quot;: 55885824,
+              &quot;after_data_load&quot;: 56901632,
+              &quot;after_session&quot;: 72417280,
+              &quot;after_first_run&quot;: 73138176,
+              &quot;after_dataset_evaluation&quot;: 73302016,
+              &quot;after_warmup&quot;: 73318400,
+              &quot;after_work&quot;: 73334784
+            },
+            &quot;process_high_water_rss_bytes&quot;: 73334784,
+            &quot;parent_sampled_peak_rss_bytes&quot;: 73367552,
+            &quot;parent_rss_samples&quot;: 66,
+            &quot;parent_sampling_interval_ms&quot;: 2
+          },
+          &quot;profile&quot;: null,
+          &quot;dataset&quot;: {
+            &quot;metadata&quot;: {
+              &quot;rows&quot;: 450,
+              &quot;batch_size&quot;: 64,
+              &quot;batches_per_pass&quot;: 8,
+              &quot;last_batch_rows&quot;: 2,
+              &quot;classification_output&quot;: &quot;probabilities&quot;,
+              &quot;classes&quot;: [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              &quot;reference_correct&quot;: 436,
+              &quot;reference_accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;reference_predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;
+            },
+            &quot;evaluation&quot;: {
+              &quot;valid_rows&quot;: 450,
+              &quot;calls&quot;: 8,
+              &quot;correct&quot;: 436,
+              &quot;accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+              &quot;inference_ms&quot;: null,
+              &quot;validated_wall_ms&quot;: 1.058667
+            },
+            &quot;timed_passes&quot;: [
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.607625,
+                &quot;validated_wall_ms&quot;: 0.981625
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.485707,
+                &quot;validated_wall_ms&quot;: 0.787375
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.502164,
+                &quot;validated_wall_ms&quot;: 0.808041
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.5708759999999999,
+                &quot;validated_wall_ms&quot;: 0.876708
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.477582,
+                &quot;validated_wall_ms&quot;: 0.764375
+              }
+            ]
+          },
+          &quot;latency_sample_rows&quot;: [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          &quot;worker_wall_ms&quot;: 170.74212498846464
+        },
+        {
+          &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+          &quot;available_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;AzureExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;registered_providers&quot;: [
+            &quot;CoreMLExecutionProvider&quot;,
+            &quot;CPUExecutionProvider&quot;
+          ],
+          &quot;environment&quot;: {
+            &quot;python&quot;: &quot;3.12.14&quot;,
+            &quot;numpy&quot;: &quot;1.26.4&quot;,
+            &quot;onnxruntime&quot;: &quot;1.31.0&quot;,
+            &quot;psutil&quot;: &quot;7.0.0&quot;,
+            &quot;os&quot;: &quot;Darwin&quot;,
+            &quot;os_release&quot;: &quot;27.0.0&quot;,
+            &quot;machine&quot;: &quot;arm64&quot;,
+            &quot;logical_cpus&quot;: 15,
+            &quot;python_optimization&quot;: 0
+          },
+          &quot;inputs&quot;: [
+            {
+              &quot;name&quot;: &quot;X&quot;,
+              &quot;shape&quot;: [
+                450,
+                64
+              ],
+              &quot;dtype&quot;: &quot;float32&quot;,
+              &quot;bytes&quot;: 115200
+            }
+          ],
+          &quot;session_creation_ms&quot;: 40.505542,
+          &quot;first_run_ms&quot;: 2.844,
+          &quot;latency_samples_ms&quot;: [
+            0.061833,
+            0.0775,
+            0.071875,
+            0.085083,
+            0.060709,
+            0.058584,
+            0.058959,
+            0.080584,
+            0.092542,
+            0.069875,
+            0.057709,
+            0.060583,
+            0.053208,
+            0.052583,
+            0.049666,
+            0.086958,
+            0.136292,
+            0.074208,
+            0.087583,
+            0.059625,
+            0.0605,
+            0.049042,
+            0.056708,
+            0.070542,
+            0.091166,
+            0.084125,
+            0.089167,
+            0.07025,
+            0.083042,
+            0.069875,
+            0.064042,
+            0.080084,
+            0.070292,
+            0.053209,
+            0.051084,
+            0.04875,
+            0.072875,
+            0.065959,
+            0.064709,
+            0.067834
+          ],
+          &quot;correctness&quot;: {
+            &quot;status&quot;: &quot;passed&quot;,
+            &quot;checked_calls&quot;: 54,
+            &quot;outputs&quot;: [
+              {
+                &quot;name&quot;: &quot;logits&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 1.52587890625e-05
+              },
+              {
+                &quot;name&quot;: &quot;probabilities&quot;,
+                &quot;shape&quot;: [
+                  2,
+                  10
+                ],
+                &quot;dtype&quot;: &quot;float32&quot;,
+                &quot;passed&quot;: true,
+                &quot;max_absolute_error&quot;: 5.062616992290714e-14
+              }
+            ]
+          },
+          &quot;memory&quot;: {
+            &quot;rss_bytes_by_stage&quot;: {
+              &quot;before_numpy_ort_import&quot;: 20086784,
+              &quot;after_import&quot;: 55754752,
+              &quot;after_data_load&quot;: 56852480,
+              &quot;after_session&quot;: 72499200,
+              &quot;after_first_run&quot;: 73252864,
+              &quot;after_dataset_evaluation&quot;: 73433088,
+              &quot;after_warmup&quot;: 73433088,
+              &quot;after_work&quot;: 73465856
+            },
+            &quot;process_high_water_rss_bytes&quot;: 73465856,
+            &quot;parent_sampled_peak_rss_bytes&quot;: 73711616,
+            &quot;parent_rss_samples&quot;: 68,
+            &quot;parent_sampling_interval_ms&quot;: 2
+          },
+          &quot;profile&quot;: null,
+          &quot;dataset&quot;: {
+            &quot;metadata&quot;: {
+              &quot;rows&quot;: 450,
+              &quot;batch_size&quot;: 64,
+              &quot;batches_per_pass&quot;: 8,
+              &quot;last_batch_rows&quot;: 2,
+              &quot;classification_output&quot;: &quot;probabilities&quot;,
+              &quot;classes&quot;: [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              &quot;reference_correct&quot;: 436,
+              &quot;reference_accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;reference_predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;
+            },
+            &quot;evaluation&quot;: {
+              &quot;valid_rows&quot;: 450,
+              &quot;calls&quot;: 8,
+              &quot;correct&quot;: 436,
+              &quot;accuracy&quot;: 0.9688888888888889,
+              &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+              &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+              &quot;inference_ms&quot;: null,
+              &quot;validated_wall_ms&quot;: 1.321625
+            },
+            &quot;timed_passes&quot;: [
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.555127,
+                &quot;validated_wall_ms&quot;: 0.934667
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.523124,
+                &quot;validated_wall_ms&quot;: 0.8895
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.5945,
+                &quot;validated_wall_ms&quot;: 0.918541
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.6317510000000001,
+                &quot;validated_wall_ms&quot;: 0.973
+              },
+              {
+                &quot;valid_rows&quot;: 450,
+                &quot;calls&quot;: 8,
+                &quot;correct&quot;: 436,
+                &quot;accuracy&quot;: 0.9688888888888889,
+                &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+                &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+                &quot;inference_ms&quot;: 0.494712,
+                &quot;validated_wall_ms&quot;: 0.787791
+              }
+            ]
+          },
+          &quot;latency_sample_rows&quot;: [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          &quot;worker_wall_ms&quot;: 173.48254099488258
+        }
+      ],
+      &quot;profile&quot;: {
+        &quot;provider_kernel_events&quot;: {
+          &quot;CoreMLExecutionProvider&quot;: 9
+        },
+        &quot;unattributed_kernel_events&quot;: 0,
+        &quot;nodes&quot;: [
+          {
+            &quot;name&quot;: &quot;CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+            &quot;duration_us&quot;: 2632
+          },
+          {
+            &quot;name&quot;: &quot;CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+            &quot;duration_us&quot;: 129
+          },
+          {
+            &quot;name&quot;: &quot;CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+            &quot;duration_us&quot;: 110
+          },
+          {
+            &quot;name&quot;: &quot;CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+            &quot;duration_us&quot;: 112
+          },
+          {
+            &quot;name&quot;: &quot;CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+            &quot;duration_us&quot;: 86
+          },
+          {
+            &quot;name&quot;: &quot;CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+            &quot;duration_us&quot;: 78
+          },
+          {
+            &quot;name&quot;: &quot;CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+            &quot;duration_us&quot;: 64
+          },
+          {
+            &quot;name&quot;: &quot;CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+            &quot;duration_us&quot;: 57
+          },
+          {
+            &quot;name&quot;: &quot;CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time&quot;,
+            &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+            &quot;duration_us&quot;: 89
+          }
+        ],
+        &quot;scope&quot;: &quot;Separate session: first batch and one complete dataset pass, including short tail; optimized/fused EP events, not physical-device proof.&quot;,
+        &quot;dataset_evaluation&quot;: {
+          &quot;valid_rows&quot;: 450,
+          &quot;calls&quot;: 8,
+          &quot;correct&quot;: 436,
+          &quot;accuracy&quot;: 0.9688888888888889,
+          &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+          &quot;predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;,
+          &quot;inference_ms&quot;: null,
+          &quot;validated_wall_ms&quot;: 1.27725
+        }
+      },
+      &quot;summary&quot;: {
+        &quot;session_creation_ms&quot;: {
+          &quot;count&quot;: 4,
+          &quot;min&quot;: 37.662667,
+          &quot;median&quot;: 39.976187499999995,
+          &quot;p95&quot;: 40.8878652,
+          &quot;p99&quot;: 40.94184024,
+          &quot;max&quot;: 40.955334
+        },
+        &quot;first_run_ms&quot;: {
+          &quot;count&quot;: 4,
+          &quot;min&quot;: 2.589709,
+          &quot;median&quot;: 2.8899169999999996,
+          &quot;p95&quot;: 3.9385144,
+          &quot;p99&quot;: 4.08006928,
+          &quot;max&quot;: 4.115458
+        },
+        &quot;pooled_warm_latency_ms&quot;: {
+          &quot;count&quot;: 160,
+          &quot;min&quot;: 0.04625,
+          &quot;median&quot;: 0.06635350000000001,
+          &quot;p95&quot;: 0.09254615,
+          &quot;p99&quot;: 0.11751721999999999,
+          &quot;max&quot;: 0.136292
+        },
+        &quot;per_run_p95_ms&quot;: [
+          0.10020144999999996,
+          0.08756809999999998,
+          0.08734969999999999,
+          0.09123479999999999
+        ],
+        &quot;peak_process_rss_bytes&quot;: 73711616,
+        &quot;dataset&quot;: {
+          &quot;per_trial_inference_us_per_example&quot;: [
+            1.2944986666666667,
+            1.1737964444444444,
+            1.1750906666666665,
+            1.2440951111111112
+          ],
+          &quot;per_trial_validated_wall_us_per_example&quot;: [
+            2.068759555555556,
+            1.8714631111111109,
+            1.874721777777778,
+            2.001555111111111
+          ],
+          &quot;accuracy&quot;: 0.9688888888888889,
+          &quot;correct&quot;: 436,
+          &quot;test_rows&quot;: 450
+        }
+      },
+      &quot;profile_correctness&quot;: {
+        &quot;status&quot;: &quot;passed&quot;,
+        &quot;checked_calls&quot;: 9,
+        &quot;outputs&quot;: [
+          {
+            &quot;name&quot;: &quot;logits&quot;,
+            &quot;shape&quot;: [
+              2,
+              10
+            ],
+            &quot;dtype&quot;: &quot;float32&quot;,
+            &quot;passed&quot;: true,
+            &quot;max_absolute_error&quot;: 1.52587890625e-05
+          },
+          {
+            &quot;name&quot;: &quot;probabilities&quot;,
+            &quot;shape&quot;: [
+              2,
+              10
+            ],
+            &quot;dtype&quot;: &quot;float32&quot;,
+            &quot;passed&quot;: true,
+            &quot;max_absolute_error&quot;: 5.062616992290714e-14
+          }
+        ]
+      }
+    }
+  ],
+  &quot;diagnostics&quot;: [
+    {
+      &quot;severity&quot;: &quot;info&quot;,
+      &quot;code&quot;: &quot;hardware_unverified&quot;,
+      &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+      &quot;message&quot;: &quot;Execution-provider attribution does not prove physical GPU/NPU/ANE execution.&quot;
+    }
+  ],
+  &quot;execution_order&quot;: [
+    {
+      &quot;mode&quot;: &quot;measure&quot;,
+      &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+      &quot;trial&quot;: 1
+    },
+    {
+      &quot;mode&quot;: &quot;measure&quot;,
+      &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+      &quot;trial&quot;: 1
+    },
+    {
+      &quot;mode&quot;: &quot;measure&quot;,
+      &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+      &quot;trial&quot;: 2
+    },
+    {
+      &quot;mode&quot;: &quot;measure&quot;,
+      &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+      &quot;trial&quot;: 2
+    },
+    {
+      &quot;mode&quot;: &quot;measure&quot;,
+      &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+      &quot;trial&quot;: 3
+    },
+    {
+      &quot;mode&quot;: &quot;measure&quot;,
+      &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+      &quot;trial&quot;: 3
+    },
+    {
+      &quot;mode&quot;: &quot;measure&quot;,
+      &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+      &quot;trial&quot;: 4
+    },
+    {
+      &quot;mode&quot;: &quot;measure&quot;,
+      &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+      &quot;trial&quot;: 4
+    },
+    {
+      &quot;mode&quot;: &quot;profile&quot;,
+      &quot;provider&quot;: &quot;CPUExecutionProvider&quot;,
+      &quot;trial&quot;: 1
+    },
+    {
+      &quot;mode&quot;: &quot;profile&quot;,
+      &quot;provider&quot;: &quot;CoreMLExecutionProvider&quot;,
+      &quot;trial&quot;: 1
+    }
+  ],
+  &quot;host&quot;: {
+    &quot;os&quot;: &quot;Darwin&quot;,
+    &quot;os_version&quot;: &quot;27.0.1&quot;,
+    &quot;machine&quot;: &quot;arm64&quot;,
+    &quot;cpu_model&quot;: &quot;Apple M5 Pro&quot;,
+    &quot;logical_cpus&quot;: 15,
+    &quot;physical_memory_bytes&quot;: 25769803776
+  },
+  &quot;model_inspection&quot;: {
+    &quot;onnx&quot;: &quot;1.23.2&quot;,
+    &quot;ir_version&quot;: 10,
+    &quot;opsets&quot;: [
+      {
+        &quot;domain&quot;: &quot;&quot;,
+        &quot;version&quot;: 18
+      }
+    ],
+    &quot;graph_nodes&quot;: 4,
+    &quot;self_contained&quot;: true,
+    &quot;output_names&quot;: [
+      &quot;logits&quot;,
+      &quot;probabilities&quot;
+    ]
+  },
+  &quot;dataset&quot;: {
+    &quot;rows&quot;: 450,
+    &quot;batch_size&quot;: 64,
+    &quot;batches_per_pass&quot;: 8,
+    &quot;last_batch_rows&quot;: 2,
+    &quot;classification_output&quot;: &quot;probabilities&quot;,
+    &quot;classes&quot;: [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    &quot;reference_correct&quot;: 436,
+    &quot;reference_accuracy&quot;: 0.9688888888888889,
+    &quot;sample_ids_sha256&quot;: &quot;33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa&quot;,
+    &quot;reference_predictions_sha256&quot;: &quot;be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9&quot;
+  },
+  &quot;status&quot;: &quot;passed&quot;,
+  &quot;measurement_scope&quot;: [
+    &quot;Model and data are snapshotted once by the controller; all child processes use the same snapshot. Copying and ONNX preflight are outside worker time/RSS measurements.&quot;,
+    &quot;Latency is synchronous session.run wall time including Python dispatch, tensor transfers and output allocation. File loading and validation are outside each call timer.&quot;,
+    &quot;All measured outputs are checked outside each call timer when a reference is supplied. These checks influence cache state and memory; this is a validated-call benchmark, not a raw kernel benchmark.&quot;,
+    &quot;Session creation excludes Python/ORT imports and NPZ loading. First run is first use of a fresh session, not a cold OS/filesystem/device cache.&quot;,
+    &quot;RSS is whole worker-process resident memory: interpreter, libraries, inputs, references, validation and runtime. It is not model-only allocation or total system/device memory. CoreML/helper-process memory is excluded.&quot;,
+    &quot;OS high-water RSS covers process lifetime through the final checkpoint; parent 2 ms sampling also includes startup/exit but can miss short spikes. Stage RSS differences are observations, not causal allocations.&quot;,
+    &quot;Profiling runs in a separate fresh session and is excluded from timing/RSS summaries. EP assignment may differ between sessions and does not identify physical CPU/GPU/ANE use.&quot;,
+    &quot;Timing trials alternate provider order each round; all profiling runs follow all timing trials. Fixed inputs, OS scheduling, thermal state and system caches remain uncontrolled. No statistical speedup or cross-machine performance claim is made.&quot;,
+    &quot;Numeric finite dense tensors and self-contained ONNX models on macOS/Linux only. Dataset accuracy requires supplied labels and a classification output; the tool does not establish arbitrary dataset/split provenance. No service-load test, device-memory accounting, or sandbox for untrusted models.&quot;
+  ]
+}
+</pre></details></section></html>

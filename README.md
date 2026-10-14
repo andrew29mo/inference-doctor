@@ -53,7 +53,7 @@ To enforce budgets, add `--max-p95-ms 1 --max-peak-mib 128` with thresholds appr
 
 [Recorded measurements and interpretation](results/README.md) cover five workloads: a linear graph, an MLP at batches 1/16/64, and a residual graph. CPU runs all five; CoreML is also measured on the identical MLP batch-16 model, inputs and reference.
 
-These are actual ONNX Runtime executions with independent NumPy output checks, not simulated estimates. The examples are original seeded **synthetic models**, not trained task models, and make no dataset-accuracy claim. Tiny graphs emphasize dispatch costs. Neither an overall accelerator speedup nor model-only memory savings is claimed.
+These are actual ONNX Runtime executions with independent NumPy output checks, not simulated estimates. These five baseline examples are original seeded **synthetic models**, not trained task models, and make no dataset-accuracy claim. Tiny graphs emphasize dispatch costs. Neither an overall accelerator speedup nor model-only memory savings is claimed.
 
 Every report contains session and first-run timing separately from warm inference. Provider order alternates across four trials in the recorded suite; profiling follows all timing trials in that invocation and is excluded from timing/RSS summaries. OS caches are not cleared. Process RSS excludes CoreML helper processes and device memory, so it cannot establish total CPU-versus-CoreML memory use. See the full [measurement contract](docs/METHODOLOGY.md).
 
@@ -67,6 +67,20 @@ python tools/measure_suite.py --output results/local/suite-coreml --include-core
 
 The suite writes every outcome, including failures, into its index. Its exit status is nonzero if any case failed; warnings remain zero. Inspect individual reports for diagnoses.
 
+## Real model and complete dataset
+
+[The trained Digits example](examples/digits/README.md) adds task accuracy and full-dataset batching to the same production worker. It retains an original 64→32→10 MLP, fixed 1,347/450 train/test IDs and independent sklearn/NumPy references. [Measured CPU/CoreML comparisons](results/digits-macos/README.md) use identical model/data/label artifacts at maximum batches 1, 16, 64 and 128, including actual short final batches.
+
+```sh
+python -m pip install -r requirements-real-model.txt
+python examples/digits/prepare.py
+python tools/measure_digits.py --output results/local/digits --include-coreml
+```
+
+Dataset mode requires `--labels`, `--batch-size`, `--classification-output` and `--reference`. The label NPZ contains 1D int64 `labels`, unique `sample_ids`, and ordered `classes`. All inputs/references share the same leading row dimension. `--iterations` means complete timed dataset passes in this mode. Every output and every class prediction is checked; each pass records coverage and prediction fingerprints. No padding is performed. Call percentiles mix full/short batches; use the dataset per-example table to compare normalized inference costs. A separate wall-time figure includes validation and audit work.
+
+Worker RSS includes the whole loaded test/reference dataset and validation allocations. It excludes training/sklearn, controller work, CoreML helper processes and device memory. The accuracy is one local held-out estimate; it does not establish a writer-independent benchmark or production generalization. [Dataset attribution and dependency notices](THIRD_PARTY_NOTICES.md).
+
 ## Verification and architecture
 
 ```sh
@@ -74,14 +88,17 @@ python -m unittest discover -s tests -v
 python -O -m unittest discover -s tests
 python tools/check_project.py
 python tools/run_mutations.py
+# Full real-model validation (requires optional dependencies):
+python tools/check_digits.py
+python tools/run_mutations.py --real-model
 ```
 
-Tests exercise the installed CLI and production worker with real ORT sessions. They challenge all outputs and the final batch row, deliberate timed-only corruption, invalid inputs, missing providers, budgets, timeouts and report consistency. Ten deliberately faulty source variants must fail behavioral assertions; a source-hash mismatch alone does not count as detection. CI runs on Linux and macOS; its timing smoke tests are not performance gates.
+Tests exercise the installed CLI and production worker with real ORT sessions. They challenge all outputs and the final batch row, deliberate timed-only corruption, invalid inputs, missing providers, budgets, timeouts and report consistency. Ten core deliberately faulty source variants must fail behavioral assertions; a source-hash mismatch alone does not count as detection. CI runs on Linux and macOS; its timing smoke tests are not performance gates.
 
 The controller snapshots inputs, performs ONNX preflight and launches independent measurement/profile workers. The worker validates inputs, runs ORT and checks outputs. The controller computes summaries and conservative diagnoses, then writes escaped static HTML and JSON. [Development and verification details](CONTRIBUTING.md).
 
 ## Limits and license
 
-The MVP does not measure dataset accuracy, concurrent service load, sustained thermal behavior, physical accelerator assignment, device/helper-process memory, or production readiness. It supports one fixed input set per invocation and no external ONNX weight files, custom provider options, string/sequence/map tensors, I/O binding or Windows RSS accounting.
+The MVP measures labelled classification accuracy in dataset mode; it does not measure concurrent service load, sustained thermal behavior, physical accelerator assignment, device/helper-process memory, or production readiness. It supports a fixed input set or a finite labelled dataset per invocation, with no external ONNX weight files, custom provider options, string/sequence/map tensors, I/O binding or Windows RSS accounting.
 
 No project license has been selected. Dependency licenses remain their own; no license from another repository is implied.

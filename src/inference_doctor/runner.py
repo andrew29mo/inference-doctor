@@ -76,6 +76,11 @@ def checked_worker(config, timeout, output_names):
         result = outcome["result"]
         expected_samples = config["iterations"] if config["mode"] == "measure" else 0
         expected_checks = (1 + config["warmup"] + expected_samples) if expected_samples else 1
+        dataset_metadata = config.get("dataset_metadata")
+        if dataset_metadata:
+            batches = dataset_metadata["batches_per_pass"]
+            expected_samples *= batches
+            expected_checks = 1 + batches + (config["warmup"] + expected_samples if config["mode"] == "measure" else 0)
         samples = result["latency_samples_ms"]
         correctness = result["correctness"]
         valid = (result["provider"] == config["provider"]
@@ -93,6 +98,20 @@ def checked_worker(config, timeout, output_names):
         if config["mode"] == "profile":
             profile = result["profile"]
             valid = valid and isinstance(profile, dict) and isinstance(profile["provider_kernel_events"], dict)
+        if dataset_metadata:
+            dataset = result["dataset"]
+            valid = valid and dataset["metadata"] == dataset_metadata
+            passes = dataset["timed_passes"]
+            valid = valid and len(passes) == (config["iterations"] if config["mode"] == "measure" else 0)
+            pattern = [min(config["batch_size"], dataset_metadata["rows"] - start)
+                       for start in range(0, dataset_metadata["rows"], config["batch_size"])]
+            valid = valid and result["latency_sample_rows"] == (pattern * config["iterations"] if expected_samples else [])
+            for evidence in [dataset["evaluation"], *passes]:
+                valid = (valid and evidence["valid_rows"] == dataset_metadata["rows"]
+                         and evidence["calls"] == batches
+                         and evidence["correct"] == dataset_metadata["reference_correct"]
+                         and evidence["sample_ids_sha256"] == dataset_metadata["sample_ids_sha256"]
+                         and evidence["predictions_sha256"] == dataset_metadata["reference_predictions_sha256"])
         if not valid:
             raise ValueError("Incomplete worker evidence")
     except (KeyError, TypeError, ValueError, IndexError):
@@ -153,7 +172,7 @@ def diagnose(config, providers, repeats, timeout, max_peak_mib=None, max_p95_ms=
     # Snapshotting/preflight happen in the controller and are outside worker metrics.
     with tempfile.TemporaryDirectory(prefix="inference-doctor-inputs-") as directory:
         frozen = dict(config)
-        for key in ("model", "inputs", "reference"):
+        for key in ("model", "inputs", "reference", "labels"):
             if config.get(key):
                 source = Path(config[key])
                 target = Path(directory) / key / source.name
@@ -181,7 +200,7 @@ def _diagnose(config, providers, repeats, timeout, max_peak_mib=None, max_p95_ms
         diagnostics.append({"severity": severity, "code": code, "provider": provider, "message": message})
 
     try:
-        for key in ("model", "inputs", "reference"):
+        for key in ("model", "inputs", "reference", "labels"):
             if config.get(key):
                 report["artifacts"][key] = artifact(config[key])
     except OSError:
@@ -190,6 +209,13 @@ def _diagnose(config, providers, repeats, timeout, max_peak_mib=None, max_p95_ms
         try:
             from .model import inspect_model
             report["model_inspection"] = inspect_model(config["model"])
+            if config.get("labels"):
+                from .dataset import ClassificationDataset
+                from .validation import load_arrays
+                dataset = ClassificationDataset(load_arrays(config["inputs"]), load_arrays(config["reference"]),
+                                                config["labels"], config["batch_size"], config["classification_output"])
+                config["dataset_metadata"] = dataset.metadata()
+                report["dataset"] = dataset.metadata()
         except Exception as exc:
             from .validation import DiagnosticError
             issue("error", exc.code if isinstance(exc, DiagnosticError) else "invalid_model",
@@ -225,6 +251,13 @@ def _diagnose(config, providers, repeats, timeout, max_peak_mib=None, max_p95_ms
                 "peak_process_rss_bytes": max(peak_rss(r["memory"]) for r in entry["runs"]),
             }
             s = entry["summary"]
+            if config.get("dataset_metadata"):
+                rows = config["dataset_metadata"]["rows"]
+                s["dataset"] = {
+                    "per_trial_inference_us_per_example": [sum(r["latency_samples_ms"]) * 1000 / (rows * config["iterations"]) for r in entry["runs"]],
+                    "per_trial_validated_wall_us_per_example": [sum(p["validated_wall_ms"] for p in r["dataset"]["timed_passes"]) * 1000 / (rows * config["iterations"]) for r in entry["runs"]],
+                    "accuracy": entry["runs"][0]["dataset"]["evaluation"]["accuracy"],
+                    "correct": entry["runs"][0]["dataset"]["evaluation"]["correct"], "test_rows": rows}
             if max_peak_mib is not None and s["peak_process_rss_bytes"] > max_peak_mib * 1024**2:
                 issue("error", "memory_budget", "At least one trial exceeded the process RSS budget.", provider)
             if max_p95_ms is not None and max(s["per_run_p95_ms"]) > max_p95_ms:
@@ -233,7 +266,7 @@ def _diagnose(config, providers, repeats, timeout, max_peak_mib=None, max_p95_ms
             outcome = checked_worker(dict(config, provider=provider, mode="profile"), timeout, names)
             if not outcome["ok"]:
                 error = outcome["error"]
-                if error["code"].startswith(("output_", "nonfinite_")) or error["code"] == "worker_protocol":
+                if error["code"].startswith(("output_", "nonfinite_", "dataset_")) or error["code"] == "worker_protocol":
                     entry["profile_error"] = error
                     issue("error", error["code"], "Separate profiling session failed correctness/evidence checks. " + error["message"], provider)
                 else:

@@ -3,6 +3,7 @@
 import html
 import json
 from pathlib import Path
+from statistics import median
 
 
 LIMITATIONS = [
@@ -14,7 +15,7 @@ LIMITATIONS = [
     "OS high-water RSS covers process lifetime through the final checkpoint; parent 2 ms sampling also includes startup/exit but can miss short spikes. Stage RSS differences are observations, not causal allocations.",
     "Profiling runs in a separate fresh session and is excluded from timing/RSS summaries. EP assignment may differ between sessions and does not identify physical CPU/GPU/ANE use.",
     "Timing trials alternate provider order each round; all profiling runs follow all timing trials. Fixed inputs, OS scheduling, thermal state and system caches remain uncontrolled. No statistical speedup or cross-machine performance claim is made.",
-    "Numeric finite dense tensors and self-contained ONNX models on macOS/Linux only. No dataset accuracy claim, service-load test, device-memory accounting, or sandbox for untrusted models.",
+    "Numeric finite dense tensors and self-contained ONNX models on macOS/Linux only. Dataset accuracy requires supplied labels and a classification output; the tool does not establish arbitrary dataset/split provenance. No service-load test, device-memory accounting, or sandbox for untrusted models.",
 ]
 
 
@@ -44,6 +45,23 @@ def write_report(report, directory):
     failure_details = "".join(
         f'<h3>{esc(p["requested"])}</h3><pre>{esc(json.dumps(p["error"], indent=2))}</pre>'
         for p in report["providers"] if "error" in p)
+    dataset_panel = ""
+    if report.get("dataset"):
+        data = report["dataset"]
+        dataset_rows = []
+        for provider in report["providers"]:
+            data_summary = provider.get("summary", {}).get("dataset")
+            if data_summary:
+                dataset_rows.append("<tr>" + "".join(f"<td>{esc(v)}</td>" for v in (
+                    provider["requested"], f'{data_summary["correct"]}/{data_summary["test_rows"]}',
+                    f'{data_summary["accuracy"] * 100:.2f}%',
+                    f'{median(data_summary["per_trial_inference_us_per_example"]):.3f}',
+                    f'{median(data_summary["per_trial_validated_wall_us_per_example"]):.3f}'
+                )) + "</tr>")
+        dataset_panel = f'''<section><h2>Complete classification dataset</h2>
+<p>{esc(data["rows"])} rows · maximum batch {esc(data["batch_size"])} · {esc(data["batches_per_pass"])} calls/pass · final batch {esc(data["last_batch_rows"])} rows · no padding.</p>
+<div class="scroll"><table><thead><tr><th>Requested primary</th><th>Correct</th><th>Accuracy</th><th>Inference µs/example</th><th>Validated wall µs/example</th></tr></thead><tbody>{''.join(dataset_rows)}</tbody></table></div>
+<p>Each per-example figure is the median of per-trial totals divided by all valid scored rows. Inference sums only synchronous call timers; validated wall also includes batching, output checks, classification and coverage hashes. Every timed pass covers the full dataset. Call percentiles below mix full and short final batches; raw row counts are retained. Accuracy is measured against supplied labels; PASS does not enforce an accuracy target or certify dataset provenance.</p></section>'''
     page = f'''<!doctype html><html lang="en"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Inference Doctor report</title><style>
@@ -56,6 +74,7 @@ table{{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}}td
 <p>Model: {esc(report["artifacts"].get("model", {}).get("name", "unreadable"))} · Trials per provider: {esc(report["repeats"])}</p>
 <p>Reported CPU: {esc(report.get("host", {}).get("cpu_model") or "unknown")} · Architecture: {esc(report.get("host", {}).get("machine", "unknown"))}</p>
 <p>Passed means supplied output references and configured budgets passed in these trials; it is not deployment certification.</p></section>
+{dataset_panel}
 <section><h2>Measurements</h2><p>Requested providers are not physical-device identities. Peak RSS covers the validated worker only; CoreML helper processes and device memory are excluded. These numbers cannot compare total deployment memory.</p><div class="scroll"><table><thead><tr><th>Requested primary</th><th>Session median ms</th><th>First run median ms</th><th>Warm median ms</th><th>Warm p95 ms</th><th>Peak worker RSS MiB</th><th>Reference</th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table></div><p>Warm percentiles pool raw calls. Per-trial p95, every sample, memory stages and EP events are in the evidence below.</p></section>
 <section><h2>Diagnosis</h2><ul>{issues}</ul>{failure_details}</section><section><h2>Interpretation and limits</h2><ul>{scope}</ul></section>

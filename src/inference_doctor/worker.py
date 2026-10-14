@@ -28,6 +28,10 @@ def measure(config):
                               {"available_providers": available})
     inputs = load_arrays(config["inputs"])
     reference = load_arrays(config["reference"]) if config.get("reference") else None
+    dataset = None
+    if config.get("labels"):
+        from .dataset import ClassificationDataset
+        dataset = ClassificationDataset(inputs, reference, config["labels"], config["batch_size"], config["classification_output"])
     stages["after_data_load"] = rss()
     options = ort.SessionOptions()
     options.intra_op_num_threads = config["threads"]
@@ -61,27 +65,50 @@ def measure(config):
     if not registered or registered[0] != provider:
         raise DiagnosticError("provider_initialization", "Runtime did not register the requested primary provider.")
     stages["after_session"] = rss()
-    validate_inputs(session.get_inputs(), inputs)
+    if dataset is None:
+        validate_inputs(session.get_inputs(), inputs)
+        first_inputs, first_reference = inputs, reference
+    else:
+        for subset in dataset.slices():
+            validate_inputs(session.get_inputs(), dataset.feed(subset))
+        first_subset = next(dataset.slices())
+        first_inputs, first_reference = dataset.feed(first_subset), dataset.expected(first_subset)
     names = [m.name for m in session.get_outputs()]
     start = time.perf_counter_ns()
-    first = runtime_call("first_run", lambda: session.run(None, inputs))
+    first = runtime_call("first_run", lambda: session.run(None, first_inputs))
     first_ms = (time.perf_counter_ns() - start) / 1e6
     stages["after_first_run"] = rss()
     checks = 0
     comparison = []
 
-    def validate(outputs):
+    def validate(outputs, expected=None):
         nonlocal checks, comparison
         if reference is not None:
-            comparison = compare_outputs(names, outputs, reference, config["rtol"], config["atol"])
+            comparison = compare_outputs(names, outputs, reference if expected is None else expected, config["rtol"], config["atol"])
             checks += 1
         elif any(not isinstance(a, np.ndarray) or a.dtype.kind not in "biuf" or not np.isfinite(a).all() for a in outputs):
             raise DiagnosticError("invalid_output", "Only finite numeric tensor outputs are supported.")
 
-    validate(first)
+    validate(first, first_reference)
     del first
     samples = []
-    if config["mode"] == "measure":
+    dataset_result = None
+    sample_rows = []
+    if dataset is not None:
+        evaluation, _, _ = dataset.run_pass(session, names, runtime_call, validate, timed=False)
+        stages["after_dataset_evaluation"] = rss()
+        dataset_result = {"metadata": dataset.metadata(), "evaluation": evaluation, "timed_passes": []}
+        if config["mode"] == "measure":
+            for _ in range(config["warmup"]):
+                validate(runtime_call("warmup", lambda: session.run(None, first_inputs)), first_reference)
+            stages["after_warmup"] = rss()
+            dataset_passes = config["iterations"]
+            for _ in range(dataset_passes):
+                evidence, times, rows = dataset.run_pass(session, names, runtime_call, validate, timed=True)
+                dataset_result["timed_passes"].append(evidence)
+                samples.extend(times)
+                sample_rows.extend(rows)
+    elif config["mode"] == "measure":
         for _ in range(config["warmup"]):
             validate(runtime_call("warmup", lambda: session.run(None, inputs)))
         stages["after_warmup"] = rss()
@@ -110,6 +137,9 @@ def measure(config):
                           "duration_us": event.get("dur")})
         profile = {"provider_kernel_events": counts, "unattributed_kernel_events": unknown,
                    "nodes": nodes, "scope": "Separate session, one inference; optimized/fused graph events, not original-op coverage or hardware proof."}
+        if dataset is not None:
+            profile["scope"] = "Separate session: first batch and one complete dataset pass, including short tail; optimized/fused EP events, not physical-device proof."
+            profile["dataset_evaluation"] = dataset_result["evaluation"]
     stages["after_work"] = rss()
     highwater = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     if sys.platform != "darwin":
@@ -130,6 +160,9 @@ def measure(config):
         "memory": {"rss_bytes_by_stage": stages, "process_high_water_rss_bytes": int(highwater)},
         "profile": profile,
     }
+    if dataset_result is not None:
+        result["dataset"] = dataset_result
+        result["latency_sample_rows"] = sample_rows
     return result
 
 

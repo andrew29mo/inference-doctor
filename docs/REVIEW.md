@@ -1,6 +1,6 @@
-# MVP correctness and comparison review
+# Historical MVP review (0.1.1)
 
-Reviewed baseline: `adda9f0`. Current package: `0.1.1`, report schema 2. Current reports supersede the earlier schema-1 measurements; historical observations remain in Git, not mixed into current summaries.
+Reviewed baseline: `adda9f0`. Reviewed package: `0.1.1`, report schema 2. Its measurements superseded the earlier schema-1 results. Current 0.2.0 reports add dataset mode and were remeasured; historical observations remain in Git and are not mixed into current summaries.
 
 ## Findings and corrections
 

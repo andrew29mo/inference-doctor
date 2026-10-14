@@ -1,0 +1,29 @@
+{
+  "experiment": "trained digits MLP; same artifacts and complete held-out data for every case",
+  "cases": [
+    {
+      "batch_size": 1,
+      "report": "b1/report.json",
+      "status": "passed",
+      "exit_code": 0
+    },
+    {
+      "batch_size": 16,
+      "report": "b16/report.json",
+      "status": "passed",
+      "exit_code": 0
+    },
+    {
+      "batch_size": 64,
+      "report": "b64/report.json",
+      "status": "passed",
+      "exit_code": 0
+    },
+    {
+      "batch_size": 128,
+      "report": "b128/report.json",
+      "status": "passed",
+      "exit_code": 0
+    }
+  ]
+}

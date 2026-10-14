@@ -1,0 +1,2545 @@
+{
+  "schema_version": 2,
+  "tool_version": "0.2.0",
+  "source_sha256": "872d60bbf477d938c4547fe65662aabfa9f4159b1238c7f0ee6d40a40c0eb8e9",
+  "generated_utc": "2026-10-14T11:24:26.569200+00:00",
+  "artifacts": {
+    "model": {
+      "name": "model.onnx",
+      "bytes": 9998,
+      "sha256": "ed13aa50654a0a56b0eab677bee20cdbbcc592754c4e1703122999ce30e294cf"
+    },
+    "inputs": {
+      "name": "inputs.npz",
+      "bytes": 115456,
+      "sha256": "9579c9e2acc975fec70f41a01340808519ad16218a60221a9e2af68ee1e44b62"
+    },
+    "reference": {
+      "name": "reference.npz",
+      "bytes": 36524,
+      "sha256": "0d324ae017e653145f1ec675efdcf7412848eb2f1bbc39757194c399013e3652"
+    },
+    "labels": {
+      "name": "labels.npz",
+      "bytes": 8044,
+      "sha256": "df623a3fb1c97ab0781229f0d0c59ab8528a0cf879c085449b1e2e6f28d15e4e"
+    }
+  },
+  "settings": {
+    "iterations": 5,
+    "warmup": 5,
+    "threads": 1,
+    "rtol": 0.0001,
+    "atol": 1e-05
+  },
+  "repeats": 4,
+  "budgets": {
+    "max_peak_mib": null,
+    "max_p95_ms": null
+  },
+  "providers": [
+    {
+      "requested": "CPUExecutionProvider",
+      "runs": [
+        {
+          "provider": "CPUExecutionProvider",
+          "available_providers": [
+            "CoreMLExecutionProvider",
+            "AzureExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "registered_providers": [
+            "CPUExecutionProvider"
+          ],
+          "environment": {
+            "python": "3.12.14",
+            "numpy": "1.26.4",
+            "onnxruntime": "1.31.0",
+            "psutil": "7.0.0",
+            "os": "Darwin",
+            "os_release": "27.0.0",
+            "machine": "arm64",
+            "logical_cpus": 15,
+            "python_optimization": 0
+          },
+          "inputs": [
+            {
+              "name": "X",
+              "shape": [
+                450,
+                64
+              ],
+              "dtype": "float32",
+              "bytes": 115200
+            }
+          ],
+          "session_creation_ms": 1.724875,
+          "first_run_ms": 0.125417,
+          "latency_samples_ms": [
+            0.007167,
+            0.006709,
+            0.006625,
+            0.00675,
+            0.006833,
+            0.006917,
+            0.00725,
+            0.005209,
+            0.007291,
+            0.0065,
+            0.006875,
+            0.007042,
+            0.006833,
+            0.007125,
+            0.007083,
+            0.004375,
+            0.007042,
+            0.006791,
+            0.006459,
+            0.006667,
+            0.006708,
+            0.007,
+            0.006833,
+            0.00475,
+            0.006792,
+            0.006792,
+            0.006917,
+            0.006875,
+            0.00675,
+            0.00675,
+            0.007292,
+            0.004625,
+            0.006625,
+            0.006625,
+            0.007375,
+            0.007208,
+            0.006875,
+            0.006666,
+            0.006625,
+            0.005
+          ],
+          "correctness": {
+            "status": "passed",
+            "checked_calls": 54,
+            "outputs": [
+              {
+                "name": "logits",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 0.0
+              },
+              {
+                "name": "probabilities",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 3.552713678800501e-15
+              }
+            ]
+          },
+          "memory": {
+            "rss_bytes_by_stage": {
+              "before_numpy_ort_import": 20103168,
+              "after_import": 55853056,
+              "after_data_load": 56885248,
+              "after_session": 64028672,
+              "after_first_run": 64176128,
+              "after_dataset_evaluation": 64274432,
+              "after_warmup": 64274432,
+              "after_work": 64274432
+            },
+            "process_high_water_rss_bytes": 64274432,
+            "parent_sampled_peak_rss_bytes": 64667648,
+            "parent_rss_samples": 48,
+            "parent_sampling_interval_ms": 2
+          },
+          "profile": null,
+          "dataset": {
+            "metadata": {
+              "rows": 450,
+              "batch_size": 64,
+              "batches_per_pass": 8,
+              "last_batch_rows": 2,
+              "classification_output": "probabilities",
+              "classes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "reference_correct": 436,
+              "reference_accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "reference_predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9"
+            },
+            "evaluation": {
+              "valid_rows": 450,
+              "calls": 8,
+              "correct": 436,
+              "accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+              "inference_ms": null,
+              "validated_wall_ms": 0.437833
+            },
+            "timed_passes": [
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.05346,
+                "validated_wall_ms": 0.343875
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.053124,
+                "validated_wall_ms": 0.3435
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.05225,
+                "validated_wall_ms": 0.337167
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.052793,
+                "validated_wall_ms": 0.33725
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.052999,
+                "validated_wall_ms": 0.327083
+              }
+            ]
+          },
+          "latency_sample_rows": [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          "worker_wall_ms": 123.35158299538307
+        },
+        {
+          "provider": "CPUExecutionProvider",
+          "available_providers": [
+            "CoreMLExecutionProvider",
+            "AzureExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "registered_providers": [
+            "CPUExecutionProvider"
+          ],
+          "environment": {
+            "python": "3.12.14",
+            "numpy": "1.26.4",
+            "onnxruntime": "1.31.0",
+            "psutil": "7.0.0",
+            "os": "Darwin",
+            "os_release": "27.0.0",
+            "machine": "arm64",
+            "logical_cpus": 15,
+            "python_optimization": 0
+          },
+          "inputs": [
+            {
+              "name": "X",
+              "shape": [
+                450,
+                64
+              ],
+              "dtype": "float32",
+              "bytes": 115200
+            }
+          ],
+          "session_creation_ms": 1.715459,
+          "first_run_ms": 0.115333,
+          "latency_samples_ms": [
+            0.007292,
+            0.006917,
+            0.006875,
+            0.006833,
+            0.006708,
+            0.006791,
+            0.006666,
+            0.00475,
+            0.007125,
+            0.00675,
+            0.006792,
+            0.007208,
+            0.007083,
+            0.006834,
+            0.006708,
+            0.005583,
+            0.007,
+            0.00675,
+            0.007167,
+            0.007083,
+            0.007667,
+            0.006542,
+            0.007334,
+            0.0045,
+            0.00675,
+            0.00675,
+            0.007,
+            0.00675,
+            0.0065,
+            0.006792,
+            0.006834,
+            0.004583,
+            0.006917,
+            0.006875,
+            0.00725,
+            0.006541,
+            0.006875,
+            0.006833,
+            0.006583,
+            0.004709
+          ],
+          "correctness": {
+            "status": "passed",
+            "checked_calls": 54,
+            "outputs": [
+              {
+                "name": "logits",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 0.0
+              },
+              {
+                "name": "probabilities",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 3.552713678800501e-15
+              }
+            ]
+          },
+          "memory": {
+            "rss_bytes_by_stage": {
+              "before_numpy_ort_import": 19922944,
+              "after_import": 55771136,
+              "after_data_load": 56819712,
+              "after_session": 63946752,
+              "after_first_run": 64094208,
+              "after_dataset_evaluation": 64192512,
+              "after_warmup": 64192512,
+              "after_work": 64192512
+            },
+            "process_high_water_rss_bytes": 64192512,
+            "parent_sampled_peak_rss_bytes": 64290816,
+            "parent_rss_samples": 47,
+            "parent_sampling_interval_ms": 2
+          },
+          "profile": null,
+          "dataset": {
+            "metadata": {
+              "rows": 450,
+              "batch_size": 64,
+              "batches_per_pass": 8,
+              "last_batch_rows": 2,
+              "classification_output": "probabilities",
+              "classes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "reference_correct": 436,
+              "reference_accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "reference_predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9"
+            },
+            "evaluation": {
+              "valid_rows": 450,
+              "calls": 8,
+              "correct": 436,
+              "accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+              "inference_ms": null,
+              "validated_wall_ms": 0.437042
+            },
+            "timed_passes": [
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.052832000000000004,
+                "validated_wall_ms": 0.356458
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.054083,
+                "validated_wall_ms": 0.353875
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.054043,
+                "validated_wall_ms": 0.334541
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.051959,
+                "validated_wall_ms": 0.344458
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.052583,
+                "validated_wall_ms": 0.340083
+              }
+            ]
+          },
+          "latency_sample_rows": [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          "worker_wall_ms": 120.64587499480695
+        },
+        {
+          "provider": "CPUExecutionProvider",
+          "available_providers": [
+            "CoreMLExecutionProvider",
+            "AzureExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "registered_providers": [
+            "CPUExecutionProvider"
+          ],
+          "environment": {
+            "python": "3.12.14",
+            "numpy": "1.26.4",
+            "onnxruntime": "1.31.0",
+            "psutil": "7.0.0",
+            "os": "Darwin",
+            "os_release": "27.0.0",
+            "machine": "arm64",
+            "logical_cpus": 15,
+            "python_optimization": 0
+          },
+          "inputs": [
+            {
+              "name": "X",
+              "shape": [
+                450,
+                64
+              ],
+              "dtype": "float32",
+              "bytes": 115200
+            }
+          ],
+          "session_creation_ms": 1.986375,
+          "first_run_ms": 0.151416,
+          "latency_samples_ms": [
+            0.006791,
+            0.006875,
+            0.006542,
+            0.006416,
+            0.006542,
+            0.006417,
+            0.006458,
+            0.004333,
+            0.006791,
+            0.006458,
+            0.006708,
+            0.006625,
+            0.006625,
+            0.006417,
+            0.006542,
+            0.004333,
+            0.006708,
+            0.006375,
+            0.006417,
+            0.006416,
+            0.006583,
+            0.0065,
+            0.006834,
+            0.004084,
+            0.006708,
+            0.006416,
+            0.006542,
+            0.006542,
+            0.0065,
+            0.006417,
+            0.006833,
+            0.005041,
+            0.006708,
+            0.006542,
+            0.006792,
+            0.006583,
+            0.006459,
+            0.006458,
+            0.006459,
+            0.0045
+          ],
+          "correctness": {
+            "status": "passed",
+            "checked_calls": 54,
+            "outputs": [
+              {
+                "name": "logits",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 0.0
+              },
+              {
+                "name": "probabilities",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 3.552713678800501e-15
+              }
+            ]
+          },
+          "memory": {
+            "rss_bytes_by_stage": {
+              "before_numpy_ort_import": 20021248,
+              "after_import": 55640064,
+              "after_data_load": 56705024,
+              "after_session": 63799296,
+              "after_first_run": 63979520,
+              "after_dataset_evaluation": 64077824,
+              "after_warmup": 64077824,
+              "after_work": 64077824
+            },
+            "process_high_water_rss_bytes": 64077824,
+            "parent_sampled_peak_rss_bytes": 64159744,
+            "parent_rss_samples": 47,
+            "parent_sampling_interval_ms": 2
+          },
+          "profile": null,
+          "dataset": {
+            "metadata": {
+              "rows": 450,
+              "batch_size": 64,
+              "batches_per_pass": 8,
+              "last_batch_rows": 2,
+              "classification_output": "probabilities",
+              "classes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "reference_correct": 436,
+              "reference_accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "reference_predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9"
+            },
+            "evaluation": {
+              "valid_rows": 450,
+              "calls": 8,
+              "correct": 436,
+              "accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+              "inference_ms": null,
+              "validated_wall_ms": 0.452625
+            },
+            "timed_passes": [
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.050374,
+                "validated_wall_ms": 0.349959
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.050499,
+                "validated_wall_ms": 0.337834
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.049917,
+                "validated_wall_ms": 0.341084
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.050999,
+                "validated_wall_ms": 0.334583
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.050501000000000004,
+                "validated_wall_ms": 0.33875
+              }
+            ]
+          },
+          "latency_sample_rows": [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          "worker_wall_ms": 122.82354102353565
+        },
+        {
+          "provider": "CPUExecutionProvider",
+          "available_providers": [
+            "CoreMLExecutionProvider",
+            "AzureExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "registered_providers": [
+            "CPUExecutionProvider"
+          ],
+          "environment": {
+            "python": "3.12.14",
+            "numpy": "1.26.4",
+            "onnxruntime": "1.31.0",
+            "psutil": "7.0.0",
+            "os": "Darwin",
+            "os_release": "27.0.0",
+            "machine": "arm64",
+            "logical_cpus": 15,
+            "python_optimization": 0
+          },
+          "inputs": [
+            {
+              "name": "X",
+              "shape": [
+                450,
+                64
+              ],
+              "dtype": "float32",
+              "bytes": 115200
+            }
+          ],
+          "session_creation_ms": 1.697959,
+          "first_run_ms": 0.130584,
+          "latency_samples_ms": [
+            0.007083,
+            0.007416,
+            0.007459,
+            0.006625,
+            0.007,
+            0.006792,
+            0.006166,
+            0.004458,
+            0.007125,
+            0.006709,
+            0.0065,
+            0.007334,
+            0.007125,
+            0.006584,
+            0.00675,
+            0.004625,
+            0.007917,
+            0.007041,
+            0.006792,
+            0.006667,
+            0.006916,
+            0.006459,
+            0.006458,
+            0.004541,
+            0.0075,
+            0.006709,
+            0.006791,
+            0.006417,
+            0.006917,
+            0.006834,
+            0.006875,
+            0.004417,
+            0.007542,
+            0.006625,
+            0.007167,
+            0.006833,
+            0.006584,
+            0.006542,
+            0.006333,
+            0.00425
+          ],
+          "correctness": {
+            "status": "passed",
+            "checked_calls": 54,
+            "outputs": [
+              {
+                "name": "logits",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 0.0
+              },
+              {
+                "name": "probabilities",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 3.552713678800501e-15
+              }
+            ]
+          },
+          "memory": {
+            "rss_bytes_by_stage": {
+              "before_numpy_ort_import": 20021248,
+              "after_import": 55754752,
+              "after_data_load": 56885248,
+              "after_session": 63979520,
+              "after_first_run": 64176128,
+              "after_dataset_evaluation": 64290816,
+              "after_warmup": 64290816,
+              "after_work": 64290816
+            },
+            "process_high_water_rss_bytes": 64290816,
+            "parent_sampled_peak_rss_bytes": 64372736,
+            "parent_rss_samples": 49,
+            "parent_sampling_interval_ms": 2
+          },
+          "profile": null,
+          "dataset": {
+            "metadata": {
+              "rows": 450,
+              "batch_size": 64,
+              "batches_per_pass": 8,
+              "last_batch_rows": 2,
+              "classification_output": "probabilities",
+              "classes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "reference_correct": 436,
+              "reference_accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "reference_predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9"
+            },
+            "evaluation": {
+              "valid_rows": 450,
+              "calls": 8,
+              "correct": 436,
+              "accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+              "inference_ms": null,
+              "validated_wall_ms": 0.43775
+            },
+            "timed_passes": [
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.052999,
+                "validated_wall_ms": 0.317291
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.052752,
+                "validated_wall_ms": 0.3275
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.052791000000000005,
+                "validated_wall_ms": 0.3035
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.05246,
+                "validated_wall_ms": 0.345375
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.051876,
+                "validated_wall_ms": 0.346708
+              }
+            ]
+          },
+          "latency_sample_rows": [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          "worker_wall_ms": 126.69962499057874
+        }
+      ],
+      "profile": {
+        "provider_kernel_events": {
+          "CPUExecutionProvider": 27
+        },
+        "unattributed_kernel_events": 0,
+        "nodes": [
+          {
+            "name": "fused dense1_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 18
+          },
+          {
+            "name": "dense2_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 3
+          },
+          {
+            "name": "softmax_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 6
+          },
+          {
+            "name": "fused dense1_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 5
+          },
+          {
+            "name": "dense2_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 2
+          },
+          {
+            "name": "softmax_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 2
+          },
+          {
+            "name": "fused dense1_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 3
+          },
+          {
+            "name": "dense2_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 2
+          },
+          {
+            "name": "softmax_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 1
+          },
+          {
+            "name": "fused dense1_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 3
+          },
+          {
+            "name": "dense2_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 2
+          },
+          {
+            "name": "softmax_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 1
+          },
+          {
+            "name": "fused dense1_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 3
+          },
+          {
+            "name": "dense2_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 2
+          },
+          {
+            "name": "softmax_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 1
+          },
+          {
+            "name": "fused dense1_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 3
+          },
+          {
+            "name": "dense2_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 2
+          },
+          {
+            "name": "softmax_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 1
+          },
+          {
+            "name": "fused dense1_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 3
+          },
+          {
+            "name": "dense2_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 2
+          },
+          {
+            "name": "softmax_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 1
+          },
+          {
+            "name": "fused dense1_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 3
+          },
+          {
+            "name": "dense2_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 2
+          },
+          {
+            "name": "softmax_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 1
+          },
+          {
+            "name": "fused dense1_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 2
+          },
+          {
+            "name": "dense2_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 2
+          },
+          {
+            "name": "softmax_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "duration_us": 1
+          }
+        ],
+        "scope": "Separate session: first batch and one complete dataset pass, including short tail; optimized/fused EP events, not physical-device proof.",
+        "dataset_evaluation": {
+          "valid_rows": 450,
+          "calls": 8,
+          "correct": 436,
+          "accuracy": 0.9688888888888889,
+          "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+          "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+          "inference_ms": null,
+          "validated_wall_ms": 0.48
+        }
+      },
+      "summary": {
+        "session_creation_ms": {
+          "count": 4,
+          "min": 1.697959,
+          "median": 1.720167,
+          "p95": 1.94715,
+          "p99": 1.97853,
+          "max": 1.986375
+        },
+        "first_run_ms": {
+          "count": 4,
+          "min": 0.115333,
+          "median": 0.12800050000000002,
+          "p95": 0.14829119999999998,
+          "p99": 0.15079104,
+          "max": 0.151416
+        },
+        "pooled_warm_latency_ms": {
+          "count": 160,
+          "min": 0.004084,
+          "median": 0.006729499999999999,
+          "p95": 0.007334,
+          "p99": 0.007593249999999999,
+          "max": 0.007917
+        },
+        "per_run_p95_ms": [
+          0.0072910499999999994,
+          0.0072940999999999995,
+          0.006833049999999999,
+          0.007502099999999999
+        ],
+        "peak_process_rss_bytes": 64667648,
+        "dataset": {
+          "per_trial_inference_us_per_example": [
+            0.11761155555555554,
+            0.118,
+            0.1121288888888889,
+            0.11683466666666666
+          ],
+          "per_trial_validated_wall_us_per_example": [
+            0.7506111111111111,
+            0.7686288888888889,
+            0.7565377777777778,
+            0.7290551111111111
+          ],
+          "accuracy": 0.9688888888888889,
+          "correct": 436,
+          "test_rows": 450
+        }
+      },
+      "profile_correctness": {
+        "status": "passed",
+        "checked_calls": 9,
+        "outputs": [
+          {
+            "name": "logits",
+            "shape": [
+              2,
+              10
+            ],
+            "dtype": "float32",
+            "passed": true,
+            "max_absolute_error": 0.0
+          },
+          {
+            "name": "probabilities",
+            "shape": [
+              2,
+              10
+            ],
+            "dtype": "float32",
+            "passed": true,
+            "max_absolute_error": 3.552713678800501e-15
+          }
+        ]
+      }
+    },
+    {
+      "requested": "CoreMLExecutionProvider",
+      "runs": [
+        {
+          "provider": "CoreMLExecutionProvider",
+          "available_providers": [
+            "CoreMLExecutionProvider",
+            "AzureExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "registered_providers": [
+            "CoreMLExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "environment": {
+            "python": "3.12.14",
+            "numpy": "1.26.4",
+            "onnxruntime": "1.31.0",
+            "psutil": "7.0.0",
+            "os": "Darwin",
+            "os_release": "27.0.0",
+            "machine": "arm64",
+            "logical_cpus": 15,
+            "python_optimization": 0
+          },
+          "inputs": [
+            {
+              "name": "X",
+              "shape": [
+                450,
+                64
+              ],
+              "dtype": "float32",
+              "bytes": 115200
+            }
+          ],
+          "session_creation_ms": 40.955334,
+          "first_run_ms": 4.115458,
+          "latency_samples_ms": [
+            0.056959,
+            0.052042,
+            0.080208,
+            0.1175,
+            0.063042,
+            0.061958,
+            0.07,
+            0.089667,
+            0.090792,
+            0.082792,
+            0.099291,
+            0.088458,
+            0.091291,
+            0.08125,
+            0.064667,
+            0.095167,
+            0.117542,
+            0.063875,
+            0.092625,
+            0.061625,
+            0.060666,
+            0.06975,
+            0.064166,
+            0.086625,
+            0.084458,
+            0.063333,
+            0.057958,
+            0.061333,
+            0.068583,
+            0.074125,
+            0.069166,
+            0.0615,
+            0.064667,
+            0.053583,
+            0.048167,
+            0.053167,
+            0.05425,
+            0.065708,
+            0.066416,
+            0.06425
+          ],
+          "correctness": {
+            "status": "passed",
+            "checked_calls": 54,
+            "outputs": [
+              {
+                "name": "logits",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 1.52587890625e-05
+              },
+              {
+                "name": "probabilities",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 5.062616992290714e-14
+              }
+            ]
+          },
+          "memory": {
+            "rss_bytes_by_stage": {
+              "before_numpy_ort_import": 20086784,
+              "after_import": 55885824,
+              "after_data_load": 56901632,
+              "after_session": 72400896,
+              "after_first_run": 73170944,
+              "after_dataset_evaluation": 73383936,
+              "after_warmup": 73383936,
+              "after_work": 73383936
+            },
+            "process_high_water_rss_bytes": 73383936,
+            "parent_sampled_peak_rss_bytes": 73416704,
+            "parent_rss_samples": 69,
+            "parent_sampling_interval_ms": 2
+          },
+          "profile": null,
+          "dataset": {
+            "metadata": {
+              "rows": 450,
+              "batch_size": 64,
+              "batches_per_pass": 8,
+              "last_batch_rows": 2,
+              "classification_output": "probabilities",
+              "classes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "reference_correct": 436,
+              "reference_accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "reference_predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9"
+            },
+            "evaluation": {
+              "valid_rows": 450,
+              "calls": 8,
+              "correct": 436,
+              "accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+              "inference_ms": null,
+              "validated_wall_ms": 1.3085
+            },
+            "timed_passes": [
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.591376,
+                "validated_wall_ms": 0.967
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.693708,
+                "validated_wall_ms": 1.10425
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.616874,
+                "validated_wall_ms": 0.980709
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.540456,
+                "validated_wall_ms": 0.839
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.470208,
+                "validated_wall_ms": 0.76375
+              }
+            ]
+          },
+          "latency_sample_rows": [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          "worker_wall_ms": 178.44020799384452
+        },
+        {
+          "provider": "CoreMLExecutionProvider",
+          "available_providers": [
+            "CoreMLExecutionProvider",
+            "AzureExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "registered_providers": [
+            "CoreMLExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "environment": {
+            "python": "3.12.14",
+            "numpy": "1.26.4",
+            "onnxruntime": "1.31.0",
+            "psutil": "7.0.0",
+            "os": "Darwin",
+            "os_release": "27.0.0",
+            "machine": "arm64",
+            "logical_cpus": 15,
+            "python_optimization": 0
+          },
+          "inputs": [
+            {
+              "name": "X",
+              "shape": [
+                450,
+                64
+              ],
+              "dtype": "float32",
+              "bytes": 115200
+            }
+          ],
+          "session_creation_ms": 37.662667,
+          "first_run_ms": 2.589709,
+          "latency_samples_ms": [
+            0.049666,
+            0.054959,
+            0.069459,
+            0.074542,
+            0.061583,
+            0.065125,
+            0.064375,
+            0.066291,
+            0.090458,
+            0.055958,
+            0.052708,
+            0.052875,
+            0.04775,
+            0.046458,
+            0.046584,
+            0.055958,
+            0.080167,
+            0.059709,
+            0.073709,
+            0.113375,
+            0.06675,
+            0.072208,
+            0.087416,
+            0.08075,
+            0.077541,
+            0.076667,
+            0.074,
+            0.068,
+            0.06875,
+            0.053375,
+            0.046375,
+            0.069167,
+            0.066083,
+            0.04625,
+            0.068167,
+            0.083459,
+            0.081625,
+            0.052209,
+            0.054125,
+            0.066416
+          ],
+          "correctness": {
+            "status": "passed",
+            "checked_calls": 54,
+            "outputs": [
+              {
+                "name": "logits",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 1.52587890625e-05
+              },
+              {
+                "name": "probabilities",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 5.062616992290714e-14
+              }
+            ]
+          },
+          "memory": {
+            "rss_bytes_by_stage": {
+              "before_numpy_ort_import": 20037632,
+              "after_import": 55771136,
+              "after_data_load": 56803328,
+              "after_session": 72417280,
+              "after_first_run": 73154560,
+              "after_dataset_evaluation": 73367552,
+              "after_warmup": 73383936,
+              "after_work": 73416704
+            },
+            "process_high_water_rss_bytes": 73416704,
+            "parent_sampled_peak_rss_bytes": 73449472,
+            "parent_rss_samples": 65,
+            "parent_sampling_interval_ms": 2
+          },
+          "profile": null,
+          "dataset": {
+            "metadata": {
+              "rows": 450,
+              "batch_size": 64,
+              "batches_per_pass": 8,
+              "last_batch_rows": 2,
+              "classification_output": "probabilities",
+              "classes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "reference_correct": 436,
+              "reference_accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "reference_predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9"
+            },
+            "evaluation": {
+              "valid_rows": 450,
+              "calls": 8,
+              "correct": 436,
+              "accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+              "inference_ms": null,
+              "validated_wall_ms": 1.064083
+            },
+            "timed_passes": [
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.506,
+                "validated_wall_ms": 0.799709
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.448749,
+                "validated_wall_ms": 0.730583
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.634084,
+                "validated_wall_ms": 1.010667
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.533875,
+                "validated_wall_ms": 0.822875
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.5183340000000001,
+                "validated_wall_ms": 0.846958
+              }
+            ]
+          },
+          "latency_sample_rows": [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          "worker_wall_ms": 167.9312500054948
+        },
+        {
+          "provider": "CoreMLExecutionProvider",
+          "available_providers": [
+            "CoreMLExecutionProvider",
+            "AzureExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "registered_providers": [
+            "CoreMLExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "environment": {
+            "python": "3.12.14",
+            "numpy": "1.26.4",
+            "onnxruntime": "1.31.0",
+            "psutil": "7.0.0",
+            "os": "Darwin",
+            "os_release": "27.0.0",
+            "machine": "arm64",
+            "logical_cpus": 15,
+            "python_optimization": 0
+          },
+          "inputs": [
+            {
+              "name": "X",
+              "shape": [
+                450,
+                64
+              ],
+              "dtype": "float32",
+              "bytes": 115200
+            }
+          ],
+          "session_creation_ms": 39.446833,
+          "first_run_ms": 2.935834,
+          "latency_samples_ms": [
+            0.067375,
+            0.062625,
+            0.080584,
+            0.087208,
+            0.070708,
+            0.090042,
+            0.07475,
+            0.074333,
+            0.09725,
+            0.06,
+            0.052666,
+            0.053667,
+            0.050083,
+            0.056375,
+            0.050833,
+            0.064833,
+            0.082791,
+            0.066625,
+            0.065375,
+            0.064333,
+            0.050875,
+            0.050958,
+            0.052166,
+            0.069041,
+            0.076167,
+            0.086292,
+            0.071041,
+            0.072792,
+            0.071875,
+            0.072459,
+            0.05625,
+            0.064,
+            0.071875,
+            0.050958,
+            0.051708,
+            0.052041,
+            0.079792,
+            0.058417,
+            0.053083,
+            0.059708
+          ],
+          "correctness": {
+            "status": "passed",
+            "checked_calls": 54,
+            "outputs": [
+              {
+                "name": "logits",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 1.52587890625e-05
+              },
+              {
+                "name": "probabilities",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 5.062616992290714e-14
+              }
+            ]
+          },
+          "memory": {
+            "rss_bytes_by_stage": {
+              "before_numpy_ort_import": 19922944,
+              "after_import": 55885824,
+              "after_data_load": 56901632,
+              "after_session": 72417280,
+              "after_first_run": 73138176,
+              "after_dataset_evaluation": 73302016,
+              "after_warmup": 73318400,
+              "after_work": 73334784
+            },
+            "process_high_water_rss_bytes": 73334784,
+            "parent_sampled_peak_rss_bytes": 73367552,
+            "parent_rss_samples": 66,
+            "parent_sampling_interval_ms": 2
+          },
+          "profile": null,
+          "dataset": {
+            "metadata": {
+              "rows": 450,
+              "batch_size": 64,
+              "batches_per_pass": 8,
+              "last_batch_rows": 2,
+              "classification_output": "probabilities",
+              "classes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "reference_correct": 436,
+              "reference_accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "reference_predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9"
+            },
+            "evaluation": {
+              "valid_rows": 450,
+              "calls": 8,
+              "correct": 436,
+              "accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+              "inference_ms": null,
+              "validated_wall_ms": 1.058667
+            },
+            "timed_passes": [
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.607625,
+                "validated_wall_ms": 0.981625
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.485707,
+                "validated_wall_ms": 0.787375
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.502164,
+                "validated_wall_ms": 0.808041
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.5708759999999999,
+                "validated_wall_ms": 0.876708
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.477582,
+                "validated_wall_ms": 0.764375
+              }
+            ]
+          },
+          "latency_sample_rows": [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          "worker_wall_ms": 170.74212498846464
+        },
+        {
+          "provider": "CoreMLExecutionProvider",
+          "available_providers": [
+            "CoreMLExecutionProvider",
+            "AzureExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "registered_providers": [
+            "CoreMLExecutionProvider",
+            "CPUExecutionProvider"
+          ],
+          "environment": {
+            "python": "3.12.14",
+            "numpy": "1.26.4",
+            "onnxruntime": "1.31.0",
+            "psutil": "7.0.0",
+            "os": "Darwin",
+            "os_release": "27.0.0",
+            "machine": "arm64",
+            "logical_cpus": 15,
+            "python_optimization": 0
+          },
+          "inputs": [
+            {
+              "name": "X",
+              "shape": [
+                450,
+                64
+              ],
+              "dtype": "float32",
+              "bytes": 115200
+            }
+          ],
+          "session_creation_ms": 40.505542,
+          "first_run_ms": 2.844,
+          "latency_samples_ms": [
+            0.061833,
+            0.0775,
+            0.071875,
+            0.085083,
+            0.060709,
+            0.058584,
+            0.058959,
+            0.080584,
+            0.092542,
+            0.069875,
+            0.057709,
+            0.060583,
+            0.053208,
+            0.052583,
+            0.049666,
+            0.086958,
+            0.136292,
+            0.074208,
+            0.087583,
+            0.059625,
+            0.0605,
+            0.049042,
+            0.056708,
+            0.070542,
+            0.091166,
+            0.084125,
+            0.089167,
+            0.07025,
+            0.083042,
+            0.069875,
+            0.064042,
+            0.080084,
+            0.070292,
+            0.053209,
+            0.051084,
+            0.04875,
+            0.072875,
+            0.065959,
+            0.064709,
+            0.067834
+          ],
+          "correctness": {
+            "status": "passed",
+            "checked_calls": 54,
+            "outputs": [
+              {
+                "name": "logits",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 1.52587890625e-05
+              },
+              {
+                "name": "probabilities",
+                "shape": [
+                  2,
+                  10
+                ],
+                "dtype": "float32",
+                "passed": true,
+                "max_absolute_error": 5.062616992290714e-14
+              }
+            ]
+          },
+          "memory": {
+            "rss_bytes_by_stage": {
+              "before_numpy_ort_import": 20086784,
+              "after_import": 55754752,
+              "after_data_load": 56852480,
+              "after_session": 72499200,
+              "after_first_run": 73252864,
+              "after_dataset_evaluation": 73433088,
+              "after_warmup": 73433088,
+              "after_work": 73465856
+            },
+            "process_high_water_rss_bytes": 73465856,
+            "parent_sampled_peak_rss_bytes": 73711616,
+            "parent_rss_samples": 68,
+            "parent_sampling_interval_ms": 2
+          },
+          "profile": null,
+          "dataset": {
+            "metadata": {
+              "rows": 450,
+              "batch_size": 64,
+              "batches_per_pass": 8,
+              "last_batch_rows": 2,
+              "classification_output": "probabilities",
+              "classes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "reference_correct": 436,
+              "reference_accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "reference_predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9"
+            },
+            "evaluation": {
+              "valid_rows": 450,
+              "calls": 8,
+              "correct": 436,
+              "accuracy": 0.9688888888888889,
+              "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+              "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+              "inference_ms": null,
+              "validated_wall_ms": 1.321625
+            },
+            "timed_passes": [
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.555127,
+                "validated_wall_ms": 0.934667
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.523124,
+                "validated_wall_ms": 0.8895
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.5945,
+                "validated_wall_ms": 0.918541
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.6317510000000001,
+                "validated_wall_ms": 0.973
+              },
+              {
+                "valid_rows": 450,
+                "calls": 8,
+                "correct": 436,
+                "accuracy": 0.9688888888888889,
+                "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+                "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+                "inference_ms": 0.494712,
+                "validated_wall_ms": 0.787791
+              }
+            ]
+          },
+          "latency_sample_rows": [
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            64,
+            2
+          ],
+          "worker_wall_ms": 173.48254099488258
+        }
+      ],
+      "profile": {
+        "provider_kernel_events": {
+          "CoreMLExecutionProvider": 9
+        },
+        "unattributed_kernel_events": 0,
+        "nodes": [
+          {
+            "name": "CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time",
+            "provider": "CoreMLExecutionProvider",
+            "duration_us": 2632
+          },
+          {
+            "name": "CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time",
+            "provider": "CoreMLExecutionProvider",
+            "duration_us": 129
+          },
+          {
+            "name": "CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time",
+            "provider": "CoreMLExecutionProvider",
+            "duration_us": 110
+          },
+          {
+            "name": "CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time",
+            "provider": "CoreMLExecutionProvider",
+            "duration_us": 112
+          },
+          {
+            "name": "CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time",
+            "provider": "CoreMLExecutionProvider",
+            "duration_us": 86
+          },
+          {
+            "name": "CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time",
+            "provider": "CoreMLExecutionProvider",
+            "duration_us": 78
+          },
+          {
+            "name": "CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time",
+            "provider": "CoreMLExecutionProvider",
+            "duration_us": 64
+          },
+          {
+            "name": "CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time",
+            "provider": "CoreMLExecutionProvider",
+            "duration_us": 57
+          },
+          {
+            "name": "CoreMLExecutionProvider_12369151656182430463_CoreML_12369151656182430463_0_0_kernel_time",
+            "provider": "CoreMLExecutionProvider",
+            "duration_us": 89
+          }
+        ],
+        "scope": "Separate session: first batch and one complete dataset pass, including short tail; optimized/fused EP events, not physical-device proof.",
+        "dataset_evaluation": {
+          "valid_rows": 450,
+          "calls": 8,
+          "correct": 436,
+          "accuracy": 0.9688888888888889,
+          "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+          "predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9",
+          "inference_ms": null,
+          "validated_wall_ms": 1.27725
+        }
+      },
+      "summary": {
+        "session_creation_ms": {
+          "count": 4,
+          "min": 37.662667,
+          "median": 39.976187499999995,
+          "p95": 40.8878652,
+          "p99": 40.94184024,
+          "max": 40.955334
+        },
+        "first_run_ms": {
+          "count": 4,
+          "min": 2.589709,
+          "median": 2.8899169999999996,
+          "p95": 3.9385144,
+          "p99": 4.08006928,
+          "max": 4.115458
+        },
+        "pooled_warm_latency_ms": {
+          "count": 160,
+          "min": 0.04625,
+          "median": 0.06635350000000001,
+          "p95": 0.09254615,
+          "p99": 0.11751721999999999,
+          "max": 0.136292
+        },
+        "per_run_p95_ms": [
+          0.10020144999999996,
+          0.08756809999999998,
+          0.08734969999999999,
+          0.09123479999999999
+        ],
+        "peak_process_rss_bytes": 73711616,
+        "dataset": {
+          "per_trial_inference_us_per_example": [
+            1.2944986666666667,
+            1.1737964444444444,
+            1.1750906666666665,
+            1.2440951111111112
+          ],
+          "per_trial_validated_wall_us_per_example": [
+            2.068759555555556,
+            1.8714631111111109,
+            1.874721777777778,
+            2.001555111111111
+          ],
+          "accuracy": 0.9688888888888889,
+          "correct": 436,
+          "test_rows": 450
+        }
+      },
+      "profile_correctness": {
+        "status": "passed",
+        "checked_calls": 9,
+        "outputs": [
+          {
+            "name": "logits",
+            "shape": [
+              2,
+              10
+            ],
+            "dtype": "float32",
+            "passed": true,
+            "max_absolute_error": 1.52587890625e-05
+          },
+          {
+            "name": "probabilities",
+            "shape": [
+              2,
+              10
+            ],
+            "dtype": "float32",
+            "passed": true,
+            "max_absolute_error": 5.062616992290714e-14
+          }
+        ]
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "info",
+      "code": "hardware_unverified",
+      "provider": "CoreMLExecutionProvider",
+      "message": "Execution-provider attribution does not prove physical GPU/NPU/ANE execution."
+    }
+  ],
+  "execution_order": [
+    {
+      "mode": "measure",
+      "provider": "CPUExecutionProvider",
+      "trial": 1
+    },
+    {
+      "mode": "measure",
+      "provider": "CoreMLExecutionProvider",
+      "trial": 1
+    },
+    {
+      "mode": "measure",
+      "provider": "CoreMLExecutionProvider",
+      "trial": 2
+    },
+    {
+      "mode": "measure",
+      "provider": "CPUExecutionProvider",
+      "trial": 2
+    },
+    {
+      "mode": "measure",
+      "provider": "CPUExecutionProvider",
+      "trial": 3
+    },
+    {
+      "mode": "measure",
+      "provider": "CoreMLExecutionProvider",
+      "trial": 3
+    },
+    {
+      "mode": "measure",
+      "provider": "CoreMLExecutionProvider",
+      "trial": 4
+    },
+    {
+      "mode": "measure",
+      "provider": "CPUExecutionProvider",
+      "trial": 4
+    },
+    {
+      "mode": "profile",
+      "provider": "CPUExecutionProvider",
+      "trial": 1
+    },
+    {
+      "mode": "profile",
+      "provider": "CoreMLExecutionProvider",
+      "trial": 1
+    }
+  ],
+  "host": {
+    "os": "Darwin",
+    "os_version": "27.0.1",
+    "machine": "arm64",
+    "cpu_model": "Apple M5 Pro",
+    "logical_cpus": 15,
+    "physical_memory_bytes": 25769803776
+  },
+  "model_inspection": {
+    "onnx": "1.23.2",
+    "ir_version": 10,
+    "opsets": [
+      {
+        "domain": "",
+        "version": 18
+      }
+    ],
+    "graph_nodes": 4,
+    "self_contained": true,
+    "output_names": [
+      "logits",
+      "probabilities"
+    ]
+  },
+  "dataset": {
+    "rows": 450,
+    "batch_size": 64,
+    "batches_per_pass": 8,
+    "last_batch_rows": 2,
+    "classification_output": "probabilities",
+    "classes": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "reference_correct": 436,
+    "reference_accuracy": 0.9688888888888889,
+    "sample_ids_sha256": "33a7bab8ff94a5797e12ae9f72a4f5a822dfd78675cae826b648e485890a73aa",
+    "reference_predictions_sha256": "be6232b02b9a98c8f22e3e02856066cbf81feadc168a0cb95a910528efaa63e9"
+  },
+  "status": "passed",
+  "measurement_scope": [
+    "Model and data are snapshotted once by the controller; all child processes use the same snapshot. Copying and ONNX preflight are outside worker time/RSS measurements.",
+    "Latency is synchronous session.run wall time including Python dispatch, tensor transfers and output allocation. File loading and validation are outside each call timer.",
+    "All measured outputs are checked outside each call timer when a reference is supplied. These checks influence cache state and memory; this is a validated-call benchmark, not a raw kernel benchmark.",
+    "Session creation excludes Python/ORT imports and NPZ loading. First run is first use of a fresh session, not a cold OS/filesystem/device cache.",
+    "RSS is whole worker-process resident memory: interpreter, libraries, inputs, references, validation and runtime. It is not model-only allocation or total system/device memory. CoreML/helper-process memory is excluded.",
+    "OS high-water RSS covers process lifetime through the final checkpoint; parent 2 ms sampling also includes startup/exit but can miss short spikes. Stage RSS differences are observations, not causal allocations.",
+    "Profiling runs in a separate fresh session and is excluded from timing/RSS summaries. EP assignment may differ between sessions and does not identify physical CPU/GPU/ANE use.",
+    "Timing trials alternate provider order each round; all profiling runs follow all timing trials. Fixed inputs, OS scheduling, thermal state and system caches remain uncontrolled. No statistical speedup or cross-machine performance claim is made.",
+    "Numeric finite dense tensors and self-contained ONNX models on macOS/Linux only. Dataset accuracy requires supplied labels and a classification output; the tool does not establish arbitrary dataset/split provenance. No service-load test, device-memory accounting, or sandbox for untrusted models."
+  ]
+}
