@@ -71,10 +71,10 @@ def compare_outputs(names, outputs, reference, rtol, atol):
             raise DiagnosticError("nonfinite_output", "Model produced a non-finite output.")
         if actual.dtype.kind in "biu":
             passed = np.array_equal(actual, expected)
+            error = max((abs(int(a) - int(b)) for a, b in zip(actual.flat, expected.flat)), default=0)
         else:
             passed = bool(np.allclose(actual, expected, rtol=rtol, atol=atol, equal_nan=False))
-        # Cast before subtraction to avoid integer overflow in diagnostics.
-        error = float(np.max(np.abs(actual.astype(np.float64) - expected.astype(np.float64)))) if actual.size else 0.0
+            error = float(np.max(np.abs(actual.astype(np.float64) - expected.astype(np.float64)))) if actual.size else 0.0
         details.append({"name": name, "shape": list(actual.shape), "dtype": str(actual.dtype),
                         "passed": passed, "max_absolute_error": error if np.isfinite(error) else None})
     if not all(d["passed"] for d in details):

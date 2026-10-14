@@ -36,7 +36,7 @@ def main(argv=None):
     parser.add_argument("--output", default="results/local/report")
     parser.add_argument("--iterations", type=positive_int, default=200)
     parser.add_argument("--warmup", type=nonnegative_int, default=20)
-    parser.add_argument("--repeats", type=positive_int, default=3)
+    parser.add_argument("--repeats", type=positive_int, default=4)
     parser.add_argument("--threads", type=positive_int, default=1)
     parser.add_argument("--timeout", type=positive_int, default=120, help="Seconds per child process")
     parser.add_argument("--rtol", type=finite_nonnegative, default=1e-4)
@@ -48,7 +48,7 @@ def main(argv=None):
     config.update({k: str(Path(getattr(args, k)).resolve()) if getattr(args, k) else None
                    for k in ("model", "inputs", "reference")})
     # Output must not overwrite source artifacts, even on an error-report run.
-    targets = {Path(args.output).resolve() / name for name in ("report.json", "report.html")}
+    targets = {(Path(args.output).resolve() / name).resolve() for name in ("report.json", "report.html")}
     if any(Path(v) in targets for k, v in config.items() if k in ("model", "inputs", "reference") and v):
         parser.error("report output would overwrite an input artifact")
     providers = list(dict.fromkeys(args.provider or ["CPUExecutionProvider"]))

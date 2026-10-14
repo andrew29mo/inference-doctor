@@ -2,30 +2,31 @@
 
 These are descriptive local observations, not a general benchmark ranking or a speedup claim.
 
-- Platform: macOS arm64; Python 3.12.14, ONNX Runtime 1.31.0, NumPy 1.26.4.
-- Each provider/case: 3 fresh timing processes; 50 warmups and 500 timed calls per process; one ORT intra-op thread, sequential execution.
-- Every first, warmup and timed output checked against an independent NumPy reference (1,653 calls per provider/case).
+- Platform: Darwin 27.0.1, arm64; reported CPU Apple M5 Pro; Python 3.12.14, ONNX Runtime 1.31.0, NumPy 1.26.4.
+- Each provider/case: 4 fresh timing processes; 50 warmups and 500 timed calls per process; one ORT intra-op thread, sequential execution.
+- Provider order alternates each round (CPU/CoreML, then CoreML/CPU); profiling starts only after all timing trials within that invocation. Even trial count balances first/second position.
+- Every first, warmup and timed output checked against an independent NumPy reference (2,204 calls per provider/case), plus one separately checked profiling inference.
 - Same MLP weights across batches; CPU/CoreML batch-16 use identical model/input/reference hashes. Models are synthetic, not trained; no task accuracy is measured.
-- Latencies below are per call/batch, not per example. Warm quantiles pool 1,500 calls; trial-level distributions and every raw sample are retained.
+- Latencies below are per call/batch, not per example. Warm quantiles pool 2,000 calls; trial-level distributions and every raw sample are retained.
 - Process RSS includes Python/runtime/data/reference/validation and excludes controller, profiling workers, CoreML helper processes and device memory.
 - Measurements ran with system access needed by CoreML. A restricted sandbox initially prevented compilation; that failed diagnostic was not a performance measurement.
 
-| Case | Provider | Session median ms | First call median ms | Warm median µs | Warm p95 µs | Peak worker RSS MiB |
+| Case | Requested primary | Session median ms | First call median ms | Warm median µs | Warm p95 µs | Peak worker RSS MiB |
 |---|---|---:|---:|---:|---:|---:|
-| linear-b1 ([JSON](macos-arm64/linear-b1/report.json)) | CPUExecutionProvider | 1.721 | 0.144 | 2.792 | 3.416 | 61.31 |
-| mlp-b1 ([JSON](macos-arm64/mlp-b1/report.json)) | CPUExecutionProvider | 1.709 | 0.114 | 3.916 | 4.458 | 61.09 |
-| mlp-b16 ([JSON](macos-arm64/mlp-b16/report.json)) | CPUExecutionProvider | 1.885 | 0.130 | 4.625 | 5.083 | 61.41 |
-| mlp-b16 ([JSON](macos-arm64/mlp-b16/report.json)) | CoreMLExecutionProvider | 44.053 | 5.220 | 42.833 | 54.796 | 69.58 |
-| mlp-b64 ([JSON](macos-arm64/mlp-b64/report.json)) | CPUExecutionProvider | 1.730 | 0.117 | 5.958 | 6.292 | 61.22 |
-| residual-b16 ([JSON](macos-arm64/residual-b16/report.json)) | CPUExecutionProvider | 1.798 | 0.142 | 6.333 | 6.833 | 61.27 |
+| linear-b1 ([JSON](macos-arm64/linear-b1/report.json)) | CPUExecutionProvider | 1.568 | 0.100 | 2.792 | 3.125 | 61.14 |
+| mlp-b1 ([JSON](macos-arm64/mlp-b1/report.json)) | CPUExecutionProvider | 1.535 | 0.103 | 3.625 | 4.000 | 61.09 |
+| mlp-b16 ([JSON](macos-arm64/mlp-b16/report.json)) | CPUExecutionProvider | 1.616 | 0.107 | 4.583 | 5.000 | 61.09 |
+| mlp-b16 ([JSON](macos-arm64/mlp-b16/report.json)) | CoreMLExecutionProvider | 37.677 | 4.685 | 41.875 | 47.043 | 69.31 |
+| mlp-b64 ([JSON](macos-arm64/mlp-b64/report.json)) | CPUExecutionProvider | 1.630 | 0.110 | 5.625 | 6.125 | 61.27 |
+| residual-b16 ([JSON](macos-arm64/residual-b16/report.json)) | CPUExecutionProvider | 1.738 | 0.117 | 6.209 | 6.584 | 61.28 |
 
 ## Interpretation
 
-All recorded cases passed the supplied numerical references. On the tiny batch-16 MLP, the recorded CoreML calls were slower than CPU, with greater worker-process RSS. This does not establish total accelerator memory use or general CPU superiority; small workloads can be dominated by dispatch/transfer costs, and these trials do not isolate the cause.
+These are validated synchronous Python calls on tiny synthetic graphs, including dispatch, transfers and output allocation. Comparisons share exact model/input/reference artifacts and use balanced trial order. They do not establish general CPU/accelerator superiority or isolate dispatch, compute and transfer costs.
 
 The separate CoreML profile attributed a fused subgraph kernel event to CoreML. This is provider evidence for that profile session, not proof of Neural Engine/GPU execution or assignment in every timing trial. The CPU profile showed CPU events. No unsupported physical-device claim is made.
 
-Session creation and first-use results include visible trial variability; caches and thermal state were not controlled. Three startup observations do not establish startup tail latency. Each HTML report shows the full scope alongside measurements.
+Session creation and first-use results include visible trial variability; caches and thermal state were not controlled. A few startup observations do not establish startup tail latency. Each HTML report shows the full scope alongside measurements.
 
 ## Reports
 
@@ -37,7 +38,7 @@ Session creation and first-use results include visible trial variability; caches
 
 Download/open HTML locally; GitHub does not render standalone HTML reports as a hosted application.
 
-Original synthetic reference tensors are retained losslessly as JSON and must reconstruct the measured NPZ hash exactly. Cross-platform NumPy recomputation is checked numerically at the declared tolerances, because BLAS rounding can differ. Model/input hashes still require exact equality.
+Original synthetic reference tensors are retained losslessly as JSON and must reconstruct the measured NPZ hash exactly. Cross-platform NumPy recomputation is checked numerically at fixed independently enforced suite tolerances (rtol=1e-4, atol=1e-5), because BLAS rounding can differ. Reports cannot relax these gates. Model/input hashes still require exact equality.
 
 Regenerate with `python tools/measure_suite.py --output results/macos-arm64 --include-coreml` on an appropriately configured Mac, then `python tools/render_results.py`. New runs will differ. Review changes and verify with `python tools/check_project.py`; do not expect exact timing reproduction.
 

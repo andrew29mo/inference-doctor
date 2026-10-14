@@ -91,6 +91,7 @@ def measure(config):
             samples.append((time.perf_counter_ns() - start) / 1e6)
             # Every timed result is checked outside the timed interval.
             validate(outputs)
+            del outputs  # Do not retain the previous call's outputs during the next timer.
     profile = None
     if options.enable_profiling:
         trace = json.loads(Path(session.end_profiling()).read_text())
@@ -118,7 +119,8 @@ def measure(config):
         "environment": {"python": platform.python_version(), "numpy": np.__version__,
                         "onnxruntime": ort.__version__, "psutil": psutil.__version__,
                         "os": platform.system(), "os_release": platform.release(),
-                        "machine": platform.machine(), "logical_cpus": psutil.cpu_count()},
+                        "machine": platform.machine(), "logical_cpus": psutil.cpu_count(),
+                        "python_optimization": sys.flags.optimize},
         "inputs": [{"name": k, "shape": list(v.shape), "dtype": str(v.dtype), "bytes": v.nbytes}
                    for k, v in inputs.items()],
         "session_creation_ms": session_ms, "first_run_ms": first_ms,

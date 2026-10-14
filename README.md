@@ -41,7 +41,7 @@ inference-doctor examples/generated/mlp-b16/model.onnx \
   --inputs examples/generated/mlp-b16/inputs.npz \
   --reference examples/generated/mlp-b16/reference.npz \
   --provider CPUExecutionProvider --provider CoreMLExecutionProvider \
-  --repeats 3 --warmup 50 --iterations 500 \
+  --repeats 4 --warmup 50 --iterations 500 \
   --output results/local/providers
 ```
 
@@ -55,7 +55,7 @@ To enforce budgets, add `--max-p95-ms 1 --max-peak-mib 128` with thresholds appr
 
 These are actual ONNX Runtime executions with independent NumPy output checks, not simulated estimates. The examples are original seeded **synthetic models**, not trained task models, and make no dataset-accuracy claim. Tiny graphs emphasize dispatch costs. Neither an overall accelerator speedup nor model-only memory savings is claimed.
 
-Every report contains session and first-run timing separately from warm inference. Profiling is a separate fresh process and is excluded from timing/RSS summaries. OS caches are not cleared. Process RSS excludes CoreML helper processes and device memory, so it cannot establish total CPU-versus-CoreML memory use. See the full [measurement contract](docs/METHODOLOGY.md).
+Every report contains session and first-run timing separately from warm inference. Provider order alternates across four trials in the recorded suite; profiling follows all timing trials in that invocation and is excluded from timing/RSS summaries. OS caches are not cleared. Process RSS excludes CoreML helper processes and device memory, so it cannot establish total CPU-versus-CoreML memory use. See the full [measurement contract](docs/METHODOLOGY.md).
 
 Reproduce the suite:
 
@@ -73,9 +73,10 @@ The suite writes every outcome, including failures, into its index. Its exit sta
 python -m unittest discover -s tests -v
 python -O -m unittest discover -s tests
 python tools/check_project.py
+python tools/run_mutations.py
 ```
 
-Tests exercise the installed CLI and production worker with real ORT sessions. They challenge all outputs and the final batch row, deliberate timed-only corruption, invalid inputs, missing providers, budgets, timeouts and report consistency. CI runs on Linux and macOS; its timing smoke tests are not performance gates.
+Tests exercise the installed CLI and production worker with real ORT sessions. They challenge all outputs and the final batch row, deliberate timed-only corruption, invalid inputs, missing providers, budgets, timeouts and report consistency. Ten deliberately faulty source variants must fail behavioral assertions; a source-hash mismatch alone does not count as detection. CI runs on Linux and macOS; its timing smoke tests are not performance gates.
 
 The controller snapshots inputs, performs ONNX preflight and launches independent measurement/profile workers. The worker validates inputs, runs ORT and checks outputs. The controller computes summaries and conservative diagnoses, then writes escaped static HTML and JSON. [Development and verification details](CONTRIBUTING.md).
 

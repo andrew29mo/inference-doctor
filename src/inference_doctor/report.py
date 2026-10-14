@@ -13,7 +13,7 @@ LIMITATIONS = [
     "RSS is whole worker-process resident memory: interpreter, libraries, inputs, references, validation and runtime. It is not model-only allocation or total system/device memory. CoreML/helper-process memory is excluded.",
     "OS high-water RSS covers process lifetime through the final checkpoint; parent 2 ms sampling also includes startup/exit but can miss short spikes. Stage RSS differences are observations, not causal allocations.",
     "Profiling runs in a separate fresh session and is excluded from timing/RSS summaries. EP assignment may differ between sessions and does not identify physical CPU/GPU/ANE use.",
-    "Trials run sequentially on the local machine with fixed inputs. OS scheduling, thermal state and system caches are uncontrolled. No statistical speedup or cross-machine performance claim is made.",
+    "Timing trials alternate provider order each round; all profiling runs follow all timing trials. Fixed inputs, OS scheduling, thermal state and system caches remain uncontrolled. No statistical speedup or cross-machine performance claim is made.",
     "Numeric finite dense tensors and self-contained ONNX models on macOS/Linux only. No dataset accuracy claim, service-load test, device-memory accounting, or sandbox for untrusted models.",
 ]
 
@@ -54,8 +54,9 @@ table{{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}}td
 </style><h1>Inference Doctor</h1><p>Measured deployment evidence · v{esc(report["tool_version"])}</p>
 <section><div class="status">{esc(report["status"]).upper()}</div><p>{esc(report["generated_utc"])}</p>
 <p>Model: {esc(report["artifacts"].get("model", {}).get("name", "unreadable"))} · Trials per provider: {esc(report["repeats"])}</p>
+<p>Reported CPU: {esc(report.get("host", {}).get("cpu_model") or "unknown")} · Architecture: {esc(report.get("host", {}).get("machine", "unknown"))}</p>
 <p>Passed means supplied output references and configured budgets passed in these trials; it is not deployment certification.</p></section>
-<section><h2>Measurements</h2><div class="scroll"><table><thead><tr><th>Provider</th><th>Session median ms</th><th>First run median ms</th><th>Warm median ms</th><th>Warm p95 ms</th><th>Peak process MiB</th><th>Reference</th></tr></thead>
+<section><h2>Measurements</h2><p>Requested providers are not physical-device identities. Peak RSS covers the validated worker only; CoreML helper processes and device memory are excluded. These numbers cannot compare total deployment memory.</p><div class="scroll"><table><thead><tr><th>Requested primary</th><th>Session median ms</th><th>First run median ms</th><th>Warm median ms</th><th>Warm p95 ms</th><th>Peak worker RSS MiB</th><th>Reference</th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table></div><p>Warm percentiles pool raw calls. Per-trial p95, every sample, memory stages and EP events are in the evidence below.</p></section>
 <section><h2>Diagnosis</h2><ul>{issues}</ul>{failure_details}</section><section><h2>Interpretation and limits</h2><ul>{scope}</ul></section>
 <section><details><summary>Complete evidence and artifact hashes</summary><pre>{esc(raw)}</pre></details></section></html>'''

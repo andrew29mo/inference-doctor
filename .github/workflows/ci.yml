@@ -28,5 +28,7 @@ jobs:
         run: python -O -m unittest discover -s tests
       - name: Report provenance and repository publication hygiene
         run: python tools/check_project.py
+      - name: Actual source mutations must fail behavioral assertions
+        run: python tools/run_mutations.py
       - name: Actual inference timing smoke, not a performance gate
         run: python tools/measure_suite.py --iterations 10 --repeats 1

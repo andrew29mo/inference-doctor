@@ -8,20 +8,21 @@ import sys
 
 from make_examples import generate
 from reference_evidence import save_reference
+from suite_policy import ATOL, RTOL, REPEATS, WARMUP, ITERATIONS, THREADS, CASES
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="results/local/suite")
-    parser.add_argument("--iterations", type=int, default=500)
-    parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--iterations", type=int, default=ITERATIONS)
+    parser.add_argument("--repeats", type=int, default=REPEATS)
     parser.add_argument("--include-coreml", action="store_true", help="Record CoreML outcome even if unavailable/failing")
     args = parser.parse_args()
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
     index = {"description": "Original synthetic graphs, actual ORT execution, independent NumPy reference.",
              "cases": []}
-    for kind, batch in [("linear", 1), ("mlp", 1), ("mlp", 16), ("mlp", 64), ("residual", 16)]:
+    for kind, batch in CASES:
         case = f"{kind}-b{batch}"
         fixture = generate(Path("examples/generated") / case, kind, batch)
         destination = output / case
@@ -29,8 +30,8 @@ def main():
         save_reference(fixture / "reference.npz", destination / "reference.json")
         command = [sys.executable, "-m", "inference_doctor", str(fixture / "model.onnx"),
                    "--inputs", str(fixture / "inputs.npz"), "--reference", str(fixture / "reference.npz"),
-                   "--output", str(destination), "--iterations", str(args.iterations), "--warmup", "50",
-                   "--repeats", str(args.repeats)]
+                   "--output", str(destination), "--iterations", str(args.iterations), "--warmup", str(WARMUP),
+                   "--repeats", str(args.repeats), "--threads", str(THREADS), "--rtol", str(RTOL), "--atol", str(ATOL)]
         if args.include_coreml and case == "mlp-b16":
             command += ["--provider", "CPUExecutionProvider", "--provider", "CoreMLExecutionProvider"]
         completed = subprocess.run(command, check=False)

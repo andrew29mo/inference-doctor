@@ -2,6 +2,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -78,10 +79,12 @@ class DoctorTests(unittest.TestCase):
         result = subprocess.run([sys.executable, "-m", "inference_doctor", self.config["model"],
                                  "--inputs", self.config["inputs"], "--reference", self.config["reference"],
                                  "--output", str(self.root / "installed"), "--repeats", "1",
-                                 "--iterations", "2", "--warmup", "0"], capture_output=True, text=True)
+                                 "--iterations", "2", "--warmup", "0"], capture_output=True, text=True,
+                                env=dict(os.environ, PYTHONOPTIMIZE=str(sys.flags.optimize)))
         self.assertEqual(result.returncode, 0, result.stderr)
         report = json.loads((self.root / "installed/report.json").read_text())
         self.assertEqual(report["status"], "passed")
+        self.assertEqual(report["providers"][0]["runs"][0]["environment"]["python_optimization"], sys.flags.optimize)
         html = (self.root / "installed/report.html").read_text()
         self.assertIn("RSS is whole worker-process", html)
         self.assertIn("CPUExecutionProvider", html)
@@ -164,6 +167,86 @@ class DoctorTests(unittest.TestCase):
         self.assertIsNone(report["providers"][0]["profile"])
         self.assertIn("profiling_failed", [d["code"] for d in report["diagnostics"]])
 
+    def test_profile_numerical_failure_is_an_error(self):
+        from inference_doctor import runner
+        actual = runner.run_worker
+
+        def fail_profile(config, timeout):
+            if config["mode"] == "profile":
+                return {"ok": False, "error": {"code": "output_mismatch", "message": "Wrong profiling output"}}
+            return actual(config, timeout)
+
+        with patch.object(runner, "run_worker", fail_profile):
+            report = diagnose(self.config, ["CPUExecutionProvider"], 1, 30)
+        self.assertEqual(report["status"], "failed")
+        self.assertTrue(any(d["severity"] == "error" and d["code"] == "output_mismatch" for d in report["diagnostics"]))
+
+    def test_short_actual_measurement_loop_is_rejected(self):
+        from inference_doctor import runner
+        actual = runner.run_worker
+
+        def short_loop(config, timeout):
+            return actual(dict(config, iterations=2), timeout)
+
+        with patch.object(runner, "run_worker", short_loop):
+            report = diagnose(self.config, ["CPUExecutionProvider"], 1, 30)
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["diagnostics"][0]["code"], "worker_protocol")
+
+    def test_alternating_order_profiles_last_and_fallback_warnings(self):
+        from inference_doctor import runner
+        actual = runner.run_worker
+        observed = []
+
+        def policy_fixture(config, timeout):
+            # Actual CPU computation, relabelled only to test controller scheduling
+            # and diagnostics. This is not a real accelerator/fallback experiment.
+            observed.append((config["mode"], config["provider"]))
+            outcome = actual(dict(config, provider="CPUExecutionProvider"), timeout)
+            outcome["result"]["provider"] = config["provider"]
+            outcome["result"]["registered_providers"] = [config["provider"]]
+            return outcome
+
+        cpu, fake = "CPUExecutionProvider", "PolicyFixtureExecutionProvider"
+        with patch.object(runner, "run_worker", policy_fixture):
+            report = diagnose(self.config, [cpu, fake], 4, 30)
+        expected = [("measure", p) for pair in ([cpu, fake], [fake, cpu], [cpu, fake], [fake, cpu]) for p in pair]
+        self.assertEqual(observed, expected + [("profile", cpu), ("profile", fake)])
+        self.assertEqual(report["status"], "warning")
+        codes = {d["code"] for d in report["diagnostics"]}
+        self.assertTrue({"cpu_partition_observed", "requested_ep_unobserved", "hardware_unverified"} <= codes)
+
+    def test_memory_budget_includes_every_observed_stage(self):
+        from inference_doctor import runner
+        actual = runner.run_worker
+
+        def larger_stage(config, timeout):
+            outcome = actual(config, timeout)
+            if outcome["ok"]:
+                outcome["result"]["memory"]["rss_bytes_by_stage"]["test_observation"] = 2**40
+            return outcome
+
+        with patch.object(runner, "run_worker", larger_stage):
+            report = diagnose(self.config, ["CPUExecutionProvider"], 1, 30, max_peak_mib=1024)
+        self.assertEqual(report["status"], "failed")
+        self.assertIn("memory_budget", [d["code"] for d in report["diagnostics"]])
+
+    def test_reference_tolerance_boundaries(self):
+        expected = np.array([0., 1.], np.float32)
+        compare_outputs(["Y"], [expected + np.array([.9e-5, .9e-4], np.float32)], {"Y": expected}, 1e-4, 1e-5)
+        for delta in (np.array([1.1e-5, 0], np.float32), np.array([0, 1.3e-4], np.float32)):
+            with self.assertRaises(DiagnosticError):
+                compare_outputs(["Y"], [expected + delta], {"Y": expected}, 1e-4, 1e-5)
+
+    def test_output_alias_cannot_overwrite_inputs(self):
+        output = self.root / "alias"
+        output.mkdir()
+        (output / "report.json").symlink_to(self.config["inputs"])
+        original = Path(self.config["inputs"]).read_bytes()
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            main([self.config["model"], "--inputs", self.config["inputs"], "--output", str(output)])
+        self.assertEqual(Path(self.config["inputs"]).read_bytes(), original)
+
     def test_artifact_snapshot_is_shared_and_original_mutation_is_irrelevant(self):
         from inference_doctor import runner
         actual = runner.run_worker
@@ -236,8 +319,9 @@ class DoctorTests(unittest.TestCase):
         with self.assertRaises(DiagnosticError):
             compare_outputs(["Y"], [actual * np.nan], {"Y": actual}, 1e-4, 1e-5)
         integer = np.array([2**63 - 1], np.int64)
-        with self.assertRaises(DiagnosticError):
+        with self.assertRaises(DiagnosticError) as context:
             compare_outputs(["Y"], [integer], {"Y": integer - 1}, 1, 1)
+        self.assertEqual(context.exception.details["outputs"][0]["max_absolute_error"], 1)
 
     def test_shared_symbol_and_empty_dimensions(self):
         metadata = [SimpleNamespace(name=k, type="tensor(float)", shape=["N", 3]) for k in ("A", "B")]

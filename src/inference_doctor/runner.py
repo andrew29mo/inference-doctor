@@ -4,6 +4,7 @@ import hashlib
 import json
 import math
 import os
+import platform
 from pathlib import Path
 import shutil
 import subprocess
@@ -44,6 +45,61 @@ def source_hash():
     return h.hexdigest()
 
 
+def peak_rss(memory):
+    return max(memory["process_high_water_rss_bytes"], memory["parent_sampled_peak_rss_bytes"],
+               *memory["rss_bytes_by_stage"].values())
+
+
+def host_metadata():
+    model = None
+    try:
+        if sys.platform == "darwin":
+            model = subprocess.check_output(["sysctl", "-n", "machdep.cpu.brand_string"],
+                                            stderr=subprocess.DEVNULL, text=True, timeout=2).strip()
+        elif sys.platform.startswith("linux"):
+            for line in Path("/proc/cpuinfo").read_text().splitlines():
+                if line.startswith("model name"):
+                    model = line.split(":", 1)[1].strip()
+                    break
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return {"os": platform.system(), "os_version": platform.mac_ver()[0] if sys.platform == "darwin" else platform.release(),
+            "machine": platform.machine(), "cpu_model": model or None,
+            "logical_cpus": psutil.cpu_count(), "physical_memory_bytes": psutil.virtual_memory().total}
+
+
+def checked_worker(config, timeout, output_names):
+    outcome = run_worker(config, timeout)
+    if not outcome["ok"]:
+        return outcome
+    try:
+        result = outcome["result"]
+        expected_samples = config["iterations"] if config["mode"] == "measure" else 0
+        expected_checks = (1 + config["warmup"] + expected_samples) if expected_samples else 1
+        samples = result["latency_samples_ms"]
+        correctness = result["correctness"]
+        valid = (result["provider"] == config["provider"]
+                 and result["registered_providers"][0] == config["provider"]
+                 and len(samples) == expected_samples
+                 and all(math.isfinite(t) and t > 0 for t in samples))
+        if config.get("reference"):
+            outputs = correctness["outputs"]
+            valid = (valid and correctness["status"] == "passed"
+                     and correctness["checked_calls"] == expected_checks
+                     and sorted(o["name"] for o in outputs) == sorted(output_names)
+                     and all(o["passed"] is True for o in outputs))
+        else:
+            valid = valid and correctness["status"] == "not_checked" and correctness["checked_calls"] == 0
+        if config["mode"] == "profile":
+            profile = result["profile"]
+            valid = valid and isinstance(profile, dict) and isinstance(profile["provider_kernel_events"], dict)
+        if not valid:
+            raise ValueError("Incomplete worker evidence")
+    except (KeyError, TypeError, ValueError, IndexError):
+        return {"ok": False, "error": {"code": "worker_protocol", "message": "Worker evidence is incomplete or inconsistent with the requested calls/outputs."}}
+    return outcome
+
+
 def run_worker(config, timeout):
     with tempfile.TemporaryDirectory(prefix="inference-doctor-") as directory:
         config = dict(config, workdir=directory)
@@ -80,7 +136,10 @@ def run_worker(config, timeout):
         if process.returncode or not result_path.exists():
             return {"ok": False, "error": {"code": "worker_failed", "message": "Worker terminated without a complete result.",
                                             "returncode": process.returncode}}
-        result = json.loads(result_path.read_text())
+        try:
+            result = json.loads(result_path.read_text())
+        except (OSError, ValueError):
+            return {"ok": False, "error": {"code": "worker_protocol", "message": "Worker did not produce a valid JSON result."}}
         if result["ok"]:
             result["result"]["memory"].update({"parent_sampled_peak_rss_bytes": peak,
                                                "parent_rss_samples": samples,
@@ -111,11 +170,11 @@ def diagnose(config, providers, repeats, timeout, max_peak_mib=None, max_p95_ms=
 def _diagnose(config, providers, repeats, timeout, max_peak_mib=None, max_p95_ms=None):
     from datetime import datetime, timezone
     from . import __version__
-    report = {"schema_version": 1, "tool_version": __version__, "source_sha256": source_hash(),
+    report = {"schema_version": 2, "tool_version": __version__, "source_sha256": source_hash(),
               "generated_utc": datetime.now(timezone.utc).isoformat(), "artifacts": {},
               "settings": {k: config[k] for k in ("iterations", "warmup", "threads", "rtol", "atol")},
               "repeats": repeats, "budgets": {"max_peak_mib": max_peak_mib, "max_p95_ms": max_p95_ms},
-              "providers": [], "diagnostics": []}
+              "providers": [], "diagnostics": [], "execution_order": [], "host": host_metadata()}
     diagnostics = report["diagnostics"]
 
     def issue(severity, code, message, provider=None):
@@ -138,16 +197,24 @@ def _diagnose(config, providers, repeats, timeout, max_peak_mib=None, max_p95_ms
     if config.get("reference") is None:
         issue("warning", "no_reference", "No independent reference supplied; output correctness is NOT verified.")
     if not diagnostics or not any(d["severity"] == "error" for d in diagnostics):
-        for provider in providers:
-            entry = {"requested": provider, "runs": [], "profile": None}
-            report["providers"].append(entry)
-            for _ in range(repeats):
-                outcome = run_worker(dict(config, provider=provider, mode="measure"), timeout)
+        report["providers"] = [{"requested": p, "runs": [], "profile": None} for p in providers]
+        names = report["model_inspection"]["output_names"]
+        for trial in range(repeats):
+            order = report["providers"] if trial % 2 == 0 else list(reversed(report["providers"]))
+            for entry in order:
+                if "error" in entry:
+                    continue
+                provider = entry["requested"]
+                report["execution_order"].append({"mode": "measure", "provider": provider, "trial": trial + 1})
+                outcome = checked_worker(dict(config, provider=provider, mode="measure"), timeout, names)
                 if not outcome["ok"]:
                     issue("error", outcome["error"]["code"], outcome["error"]["message"], provider)
                     entry["error"] = outcome["error"]
-                    break
-                entry["runs"].append(outcome["result"])
+                else:
+                    entry["runs"].append(outcome["result"])
+        # All performance trials finish before any provider's profiling session.
+        for entry in report["providers"]:
+            provider = entry["requested"]
             if len(entry["runs"]) != repeats:
                 continue
             entry["summary"] = {
@@ -155,28 +222,33 @@ def _diagnose(config, providers, repeats, timeout, max_peak_mib=None, max_p95_ms
                 "first_run_ms": summary([r["first_run_ms"] for r in entry["runs"]]),
                 "pooled_warm_latency_ms": summary([t for r in entry["runs"] for t in r["latency_samples_ms"]]),
                 "per_run_p95_ms": [percentile(r["latency_samples_ms"], .95) for r in entry["runs"]],
-                "peak_process_rss_bytes": max(max(r["memory"]["process_high_water_rss_bytes"],
-                                                  r["memory"]["parent_sampled_peak_rss_bytes"])
-                                              for r in entry["runs"]),
+                "peak_process_rss_bytes": max(peak_rss(r["memory"]) for r in entry["runs"]),
             }
             s = entry["summary"]
             if max_peak_mib is not None and s["peak_process_rss_bytes"] > max_peak_mib * 1024**2:
                 issue("error", "memory_budget", "At least one trial exceeded the process RSS budget.", provider)
             if max_p95_ms is not None and max(s["per_run_p95_ms"]) > max_p95_ms:
                 issue("error", "latency_budget", "At least one trial exceeded the warm-call p95 budget.", provider)
-            outcome = run_worker(dict(config, provider=provider, mode="profile"), timeout)
+            report["execution_order"].append({"mode": "profile", "provider": provider, "trial": 1})
+            outcome = checked_worker(dict(config, provider=provider, mode="profile"), timeout, names)
             if not outcome["ok"]:
-                issue("warning", "profiling_failed", "Separate profiling pass failed; execution assignment is unknown.", provider)
+                error = outcome["error"]
+                if error["code"].startswith(("output_", "nonfinite_")) or error["code"] == "worker_protocol":
+                    entry["profile_error"] = error
+                    issue("error", error["code"], "Separate profiling session failed correctness/evidence checks. " + error["message"], provider)
+                else:
+                    issue("warning", "profiling_failed", "Separate profiling pass failed; execution assignment is unknown.", provider)
                 continue
             entry["profile"] = outcome["result"]["profile"]
+            entry["profile_correctness"] = outcome["result"]["correctness"]
             counts = entry["profile"]["provider_kernel_events"]
             if not counts or entry["profile"]["unattributed_kernel_events"]:
                 issue("warning", "incomplete_assignment", "Profiling does not fully attribute observed kernel events.", provider)
+            if not counts.get(provider, 0):
+                issue("warning", "requested_ep_unobserved", "No kernel events attributed to the requested provider were observed.", provider)
             if provider != "CPUExecutionProvider":
                 if counts.get("CPUExecutionProvider", 0):
                     issue("warning", "cpu_partition_observed", "CPU kernel events were observed in the separate profiling session.", provider)
-                if not counts.get(provider, 0):
-                    issue("warning", "requested_ep_unobserved", "No kernel events attributed to the requested provider were observed.", provider)
                 issue("info", "hardware_unverified", "Execution-provider attribution does not prove physical GPU/NPU/ANE execution.", provider)
     report["status"] = "failed" if any(d["severity"] == "error" for d in diagnostics) else (
         "warning" if any(d["severity"] == "warning" for d in diagnostics) else "passed")

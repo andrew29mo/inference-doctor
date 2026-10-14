@@ -16,6 +16,10 @@ from inference_doctor.runner import artifact, source_hash
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 from reference_evidence import load_reference
+from suite_policy import ATOL, RTOL, REPEATS, WARMUP, ITERATIONS, THREADS, CASES, providers_for
+from inference_doctor.report import write_report, LIMITATIONS
+from inference_doctor import __version__
+from inference_doctor.model import inspect_model
 spec = importlib.util.spec_from_file_location("make_examples", ROOT / "tools/make_examples.py")
 generator = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(generator)
@@ -43,72 +47,132 @@ def verify_summary(actual, values):
 
 def verify_report(report, fixture, reference_path):
     require(report["source_sha256"] == source_hash(), "Report source hash is stale")
+    require(report["schema_version"] == 2, "Unsupported report schema")
+    require(report["tool_version"] == __version__, "Tool version differs")
+    require(report["model_inspection"] == inspect_model(fixture / "model.onnx"), "Model metadata differs")
+    policy = {"rtol": RTOL, "atol": ATOL, "iterations": ITERATIONS, "warmup": WARMUP, "threads": THREADS}
+    require(report["settings"] == policy, "Recorded settings/tolerances differ from fixed suite policy")
+    require(report["repeats"] == REPEATS, "Recorded trial count differs from policy")
+    require(report["budgets"] == {"max_peak_mib": None, "max_p95_ms": None}, "Unexpected recorded budgets")
+    require(report["measurement_scope"] == LIMITATIONS, "Measurement scope differs from current source")
+    manifest = json.loads((fixture / "manifest.json").read_text())
+    expected_providers = providers_for(manifest["kind"], manifest["batch"])
+    require([p["requested"] for p in report["providers"]] == expected_providers, "Provider inventory differs")
+    expected_order = []
+    for trial in range(REPEATS):
+        order = expected_providers if trial % 2 == 0 else list(reversed(expected_providers))
+        expected_order.extend({"mode": "measure", "provider": p, "trial": trial + 1} for p in order)
+    expected_order.extend({"mode": "profile", "provider": p, "trial": 1} for p in expected_providers)
+    require(report["execution_order"] == expected_order, "Timing/profile order differs")
     for key, name in [("model", "model.onnx"), ("inputs", "inputs.npz")]:
         require(report["artifacts"][key] == artifact(fixture / name), f"Fixture differs: {key}")
-    # The measured reference is retained exactly. Recomputing matrix products on
-    # a different BLAS/architecture need not produce bit-identical float32 bits.
     canonical = load_reference(reference_path)
+    require(bool(canonical), "Empty reference evidence")
     with tempfile.TemporaryDirectory() as directory:
         restored = Path(directory) / "reference.npz"
         np.savez(restored, **canonical)
         require(report["artifacts"]["reference"] == artifact(restored), "Recorded reference integrity differs")
+    reference_drift = 0.0
     with np.load(fixture / "reference.npz", allow_pickle=False) as regenerated:
         require(set(regenerated.files) == set(canonical), "Reference output names differ")
         for name, expected in canonical.items():
             actual = regenerated[name]
             require(actual.shape == expected.shape and actual.dtype == expected.dtype, "Reference tensor metadata differs")
             require(np.isfinite(expected).all(), "Nonfinite canonical reference")
-            require(np.allclose(actual, expected, rtol=report["settings"]["rtol"], atol=report["settings"]["atol"]),
+            require(np.allclose(actual, expected, rtol=RTOL, atol=ATOL),
                     f"Independent recomputed reference differs beyond tolerance: {name}")
-    settings = report["settings"]
+            reference_drift = max(reference_drift, float(np.max(np.abs(actual.astype(np.float64) - expected.astype(np.float64)))))
+    with np.load(fixture / "inputs.npz", allow_pickle=False) as inputs:
+        input_metadata = [{"name": k, "shape": list(inputs[k].shape), "dtype": str(inputs[k].dtype), "bytes": inputs[k].nbytes}
+                          for k in inputs.files]
+
+    def verify_correctness(evidence, calls):
+        require(evidence["status"] == "passed", "Unverified reference")
+        require(type(evidence["checked_calls"]) is int and evidence["checked_calls"] == calls, "Unchecked calls")
+        outputs = evidence["outputs"]
+        require(sorted(o["name"] for o in outputs) == sorted(canonical), "Incomplete output evidence")
+        for output in outputs:
+            expected = canonical[output["name"]]
+            require(output["passed"] is True, "Output failed")
+            require(output["shape"] == list(expected.shape) and output["dtype"] == str(expected.dtype), "Output metadata differs")
+            error = output["max_absolute_error"]
+            limit = ATOL + RTOL * float(np.max(np.abs(expected)))
+            require(isinstance(error, (float, int)) and math.isfinite(error) and 0 <= error <= limit, "Output error contradicts tolerance")
+
+    expected_diagnostics = []
+    environment = None
     for provider in report["providers"]:
-        if "error" in provider:
-            require(any(d["severity"] == "error" and d["provider"] == provider["requested"]
-                        for d in report["diagnostics"]), "Provider error is hidden")
-            continue
-        require(len(provider["runs"]) == report["repeats"], "Trial count differs")
-        samples = []
-        peaks = []
+        requested = provider["requested"]
+        require("error" not in provider and "profile_error" not in provider, "Recorded suite contains failed evidence")
+        require(len(provider["runs"]) == REPEATS, "Trial count differs")
+        samples, peaks = [], []
         for run in provider["runs"]:
-            require(run["registered_providers"][0] == provider["requested"], "Primary provider mismatch")
-            require(len(run["latency_samples_ms"]) == settings["iterations"], "Call count differs")
+            require(run["provider"] == requested and run["registered_providers"][0] == requested, "Primary provider mismatch")
+            require(run["inputs"] == input_metadata, "Input tensor metadata differs")
+            if environment is None:
+                environment = run["environment"]
+            require(run["environment"] == environment, "Timing trial software/hardware environments differ")
+            require(len(run["latency_samples_ms"]) == ITERATIONS, "Call count differs")
             require(all(t > 0 and math.isfinite(t) for t in run["latency_samples_ms"]), "Invalid timing sample")
-            require(run["correctness"]["status"] == "passed", "Unverified reference")
-            require(run["correctness"]["checked_calls"] == 1 + settings["warmup"] + settings["iterations"], "Unchecked calls")
-            require(all(o["passed"] for o in run["correctness"]["outputs"]), "Output failed")
+            verify_correctness(run["correctness"], 1 + WARMUP + ITERATIONS)
             samples.extend(run["latency_samples_ms"])
             memory = run["memory"]
-            require(memory["process_high_water_rss_bytes"] >= max(memory["rss_bytes_by_stage"].values()), "RSS high-water below a stage")
-            peaks.append(max(memory["process_high_water_rss_bytes"], memory["parent_sampled_peak_rss_bytes"]))
+            values = [memory["process_high_water_rss_bytes"], memory["parent_sampled_peak_rss_bytes"], *memory["rss_bytes_by_stage"].values()]
+            require(all(type(v) is int and v > 0 for v in values), "Invalid RSS observation")
+            peaks.append(max(values))
         summary = provider["summary"]
         verify_summary(summary["pooled_warm_latency_ms"], samples)
         for name in ("session_creation_ms", "first_run_ms"):
+            require(all(math.isfinite(r[name]) and r[name] > 0 for r in provider["runs"]), "Invalid startup timing")
             verify_summary(summary[name], [r[name] for r in provider["runs"]])
         require(summary["peak_process_rss_bytes"] == max(peaks), "RSS summary differs")
         require(summary["per_run_p95_ms"] == [quantile(r["latency_samples_ms"], .95) for r in provider["runs"]], "Trial p95 differs")
-    severities = {d["severity"] for d in report["diagnostics"]}
-    expected = "failed" if "error" in severities else "warning" if "warning" in severities else "passed"
-    require(report["status"] == expected, "Diagnosis status differs")
+        verify_correctness(provider["profile_correctness"], 1)
+        profile = provider["profile"]
+        require(isinstance(profile, dict), "Missing profile evidence")
+        counts, unknown = {}, 0
+        for node in profile["nodes"]:
+            ep = node["provider"]
+            if ep:
+                counts[ep] = counts.get(ep, 0) + 1
+            else:
+                unknown += 1
+        require(counts == profile["provider_kernel_events"] and unknown == profile["unattributed_kernel_events"], "Profile counts differ from node evidence")
+        if not counts or unknown:
+            expected_diagnostics.append(("warning", "incomplete_assignment", requested))
+        if not counts.get(requested, 0):
+            expected_diagnostics.append(("warning", "requested_ep_unobserved", requested))
+        if requested != "CPUExecutionProvider":
+            if counts.get("CPUExecutionProvider", 0):
+                expected_diagnostics.append(("warning", "cpu_partition_observed", requested))
+            expected_diagnostics.append(("info", "hardware_unverified", requested))
+    observed = [(d["severity"], d["code"], d["provider"]) for d in report["diagnostics"]]
+    require(observed == expected_diagnostics, "Diagnostics differ from profile evidence")
+    expected_status = "warning" if any(d[0] == "warning" for d in expected_diagnostics) else "passed"
+    require(report["status"] == expected_status, "Diagnosis status differs")
+    return reference_drift
 
 
 def main():
     index_path = ROOT / "results/macos-arm64/index.json"
     index = json.loads(index_path.read_text())
     mlp_model_hashes = set()
+    require([(c["kind"], c["batch"]) for c in index["cases"]] == list(CASES), "Suite case inventory differs")
     for case in index["cases"]:
+        require(case["name"] == f'{case["kind"]}-b{case["batch"]}' and case["report"] == f'{case["name"]}/report.json', "Case identity differs")
         path = index_path.parent / case["report"]
         report = json.loads(path.read_text())
         if case["kind"] == "mlp":
             mlp_model_hashes.add(report["artifacts"]["model"]["sha256"])
-        require(report["repeats"] == 3 and report["settings"]["iterations"] == 500
-                and report["settings"]["warmup"] == 50 and report["settings"]["threads"] == 1,
-                "Recorded settings differ from results overview")
         with tempfile.TemporaryDirectory() as directory:
             fixture = generator.generate(directory, case["kind"], case["batch"])
-            verify_report(report, fixture, path.parent / "reference.json")
+            drift = verify_report(report, fixture, path.parent / "reference.json")
+            print(f'{case["name"]}: regenerated reference max absolute difference {drift:.3g}; fixed rtol={RTOL:g}, atol={ATOL:g}')
         require(case["status"] == report["status"], "Index status differs")
         require(case["exit_code"] == (2 if report["status"] == "failed" else 0), "Index exit code differs")
-        require(path.with_suffix(".html").exists(), "Missing HTML report")
+        with tempfile.TemporaryDirectory() as directory:
+            write_report(dict(report), directory)
+            require(path.with_suffix(".html").read_text() == (Path(directory) / "report.html").read_text(), "HTML differs from verified JSON")
     require(len(mlp_model_hashes) == 1, "MLP weights/graph differ across batch sizes")
     overview_spec = importlib.util.spec_from_file_location("render_results", ROOT / "tools/render_results.py")
     overview = importlib.util.module_from_spec(overview_spec)

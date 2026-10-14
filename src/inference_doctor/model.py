@@ -20,4 +20,5 @@ def inspect_model(path):
     onnx.checker.check_model(model)
     return {"onnx": onnx.__version__, "ir_version": model.ir_version,
             "opsets": [{"domain": o.domain, "version": o.version} for o in model.opset_import],
-            "graph_nodes": len(model.graph.node), "self_contained": True}
+            "graph_nodes": len(model.graph.node), "self_contained": True,
+            "output_names": [o.name for o in model.graph.output]}

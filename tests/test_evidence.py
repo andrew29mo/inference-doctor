@@ -28,6 +28,16 @@ class EvidenceTests(unittest.TestCase):
             canonical_path = path.parent / "reference.json"
             checker.verify_report(report, fixture, canonical_path)
             mutations = [
+                lambda r: r["settings"].update(rtol=1e6, atol=1e6),
+                lambda r: r.update(providers=[]),
+                lambda r: r["providers"].pop(),
+                lambda r: r["providers"][0]["runs"][0]["correctness"].update(outputs=[]),
+                lambda r: r["providers"][0]["runs"][0]["correctness"]["outputs"].pop(),
+                lambda r: r["providers"][0].update(profile=None),
+                lambda r: r["providers"][0]["profile"].update(provider_kernel_events={}),
+                lambda r: r["providers"][0]["profile_correctness"].update(checked_calls=0),
+                lambda r: r["providers"][0]["runs"][0]["inputs"][0].update(shape=[1, 64]),
+                lambda r: r["execution_order"].reverse(),
                 lambda r: r.update(source_sha256="wrong"),
                 lambda r: r["artifacts"]["inputs"].update(sha256="wrong"),
                 lambda r: r["artifacts"]["reference"].update(sha256="wrong"),
