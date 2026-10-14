@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools==83.0.0"]
+requires = ["setuptools==84.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,7 +9,7 @@ description = "Evidence-based ONNX inference deployment diagnostics"
 license = "MIT"
 license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 requires-python = ">=3.12"
-dependencies = ["numpy==1.26.4", "onnx==1.23.2", "onnxruntime==1.31.0", "psutil==7.0.0"]
+dependencies = ["numpy==2.5.4", "onnx==1.23.2", "onnxruntime==1.31.0", "psutil==7.2.2"]
 
 [project.scripts]
 inference-doctor = "inference_doctor.cli:main"
