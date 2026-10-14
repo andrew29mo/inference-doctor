@@ -69,6 +69,7 @@ def verify_case(report, fixture, canonical, expected_batch):
         require(evidence["valid_rows"] == ROWS and evidence["calls"] == batches, "Incomplete dataset pass")
         require(evidence["correct"] == CORRECT and evidence["accuracy"] == CORRECT / ROWS, "Accuracy differs")
         require(evidence["sample_ids_sha256"] == id_hash and evidence["predictions_sha256"] == prediction_hash, "Coverage/prediction fingerprints differ")
+        require(math.isfinite(evidence["validated_wall_ms"]) and evidence["validated_wall_ms"] > 0, "Invalid pass wall time")
 
     def check_outputs(evidence, count):
         require(evidence["status"] == "passed" and evidence["checked_calls"] == count, "Unchecked dataset calls")
@@ -95,6 +96,7 @@ def verify_case(report, fixture, canonical, expected_batch):
             require(run["dataset"]["metadata"] == expected_data, "Worker dataset differs")
             check_outputs(run["correctness"], 1 + batches + WARMUP + ITERATIONS * batches)
             check_pass(run["dataset"]["evaluation"])
+            require(run["dataset"]["evaluation"]["inference_ms"] is None, "Untimed evaluation claims inference timing")
             passes = run["dataset"]["timed_passes"]
             require(len(passes) == ITERATIONS, "Dataset pass count differs")
             for index, evidence in enumerate(passes):
@@ -106,7 +108,9 @@ def verify_case(report, fixture, canonical, expected_batch):
             wall_per_example.append(sum(p["validated_wall_ms"] for p in passes) * 1000 / (ROWS * ITERATIONS))
             samples.extend(times)
             memory = run["memory"]
-            peaks.append(max(memory["process_high_water_rss_bytes"], memory["parent_sampled_peak_rss_bytes"], *memory["rss_bytes_by_stage"].values()))
+            observations = [memory["process_high_water_rss_bytes"], memory["parent_sampled_peak_rss_bytes"], *memory["rss_bytes_by_stage"].values()]
+            require(bool(memory["rss_bytes_by_stage"]) and all(type(v) is int and v > 0 for v in observations), "Invalid RSS observation")
+            peaks.append(max(observations))
         summary = entry["summary"]
         verify_summary(summary["pooled_warm_latency_ms"], samples)
         for name in ("session_creation_ms", "first_run_ms"):
@@ -119,6 +123,7 @@ def verify_case(report, fixture, canonical, expected_batch):
                                        "accuracy": CORRECT / ROWS, "correct": CORRECT, "test_rows": ROWS}, "Normalized performance/accuracy differs")
         check_outputs(entry["profile_correctness"], 1 + batches)
         check_pass(entry["profile"]["dataset_evaluation"])
+        require(entry["profile"]["dataset_evaluation"]["inference_ms"] is None, "Profiling claims timed evaluation")
         counts, unknown = {}, 0
         for node in entry["profile"]["nodes"]:
             if node["provider"]:

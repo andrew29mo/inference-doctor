@@ -15,8 +15,9 @@ import numpy as np
 import onnxruntime as ort
 
 from inference_doctor.cli import main
-from inference_doctor.runner import diagnose
-from inference_doctor.validation import DiagnosticError
+from inference_doctor.runner import diagnose, checked_worker, run_worker
+from inference_doctor.dataset import ClassificationDataset
+from inference_doctor.validation import DiagnosticError, load_arrays, compare_outputs
 from inference_doctor.worker import measure
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -107,6 +108,48 @@ class DatasetTests(unittest.TestCase):
         self.assertEqual(report["status"], "passed")
         self.assertEqual(report["providers"][0]["summary"]["dataset"]["correct"], self.manifest["correct"] + (-1 if was_correct else 1))
 
+    def test_controller_rejects_contradictory_actual_worker_evidence(self):
+        dataset = ClassificationDataset(load_arrays(self.config["inputs"]), load_arrays(self.config["reference"]),
+                                        self.config["labels"], 16, "probabilities")
+        config = dict(self.config, provider="CPUExecutionProvider", mode="measure", dataset_metadata=dataset.metadata())
+        original = run_worker(config, 60)
+        self.assertTrue(original["ok"], original)
+        with patch("inference_doctor.runner.run_worker", return_value=original):
+            self.assertTrue(checked_worker(config, 60, ["logits", "probabilities"])["ok"])
+        mutations = [
+            lambda r: r["dataset"]["evaluation"].update(accuracy=1.0),
+            lambda r: r["dataset"]["timed_passes"][0].update(accuracy=1.0),
+            lambda r: r["dataset"]["timed_passes"][0].update(validated_wall_ms=-1),
+            lambda r: r["dataset"]["timed_passes"][0].update(inference_ms=0),
+            lambda r: r["dataset"]["evaluation"].update(inference_ms=0),
+            lambda r: r["memory"]["rss_bytes_by_stage"].update(after_session=-1),
+            lambda r: r["memory"].update(parent_sampled_peak_rss_bytes=float("nan")),
+        ]
+        for index, mutation in enumerate(mutations):
+            with self.subTest(fault=index):
+                changed = copy.deepcopy(original)
+                mutation(changed["result"])
+                with patch("inference_doctor.runner.run_worker", return_value=changed):
+                    outcome = checked_worker(config, 60, ["logits", "probabilities"])
+                self.assertFalse(outcome["ok"])
+                self.assertEqual(outcome["error"]["code"], "worker_protocol")
+
+    def test_actual_pass_rejects_skipped_repeated_and_reordered_batches(self):
+        inputs, reference = load_arrays(self.config["inputs"]), load_arrays(self.config["reference"])
+        dataset = ClassificationDataset(inputs, reference, self.config["labels"], 128, "probabilities")
+        session = ort.InferenceSession(self.config["model"], providers=["CPUExecutionProvider"])
+        names = [o.name for o in session.get_outputs()]
+        subsets = list(dataset.slices())
+        def validate(outputs, expected):
+            compare_outputs(names, outputs, expected, 1e-4, 1e-5)
+        # Real ORT calls and per-output comparisons still pass for each subset;
+        # coverage must independently reject omission, duplication and reordering.
+        for changed in (subsets[:-1], subsets + subsets[-1:], list(reversed(subsets))):
+            with patch.object(dataset, "slices", return_value=iter(changed)):
+                with self.assertRaises(DiagnosticError) as context:
+                    dataset.run_pass(session, names, lambda stage, call: call(), validate, timed=True)
+                self.assertEqual(context.exception.code, "dataset_coverage")
+
     def test_fit_receives_only_the_fixed_training_split(self):
         x, y, train, test, provenance = prepare.dataset()
 
@@ -174,6 +217,8 @@ class DatasetTests(unittest.TestCase):
             lambda r: r["providers"][0]["runs"][0]["dataset"]["timed_passes"][0].update(predictions_sha256="wrong"),
             lambda r: r["providers"][0]["summary"]["dataset"].update(correct=450),
             lambda r: r["providers"][0]["summary"]["dataset"]["per_trial_inference_us_per_example"].__setitem__(0, 0),
+            lambda r: r["providers"][0]["runs"][0]["memory"]["rss_bytes_by_stage"].update(after_session=-1),
+            lambda r: r["providers"][0]["runs"][0]["dataset"]["evaluation"].update(validated_wall_ms=-1),
         ]
         for mutation in mutations:
             changed = copy.deepcopy(report)

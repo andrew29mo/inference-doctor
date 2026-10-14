@@ -13,12 +13,12 @@ These are descriptive local observations, not a general benchmark ranking or a s
 
 | Case | Requested primary | Session median ms | First call median ms | Warm median µs | Warm p95 µs | Peak worker RSS MiB |
 |---|---|---:|---:|---:|---:|---:|
-| linear-b1 ([JSON](macos-arm64/linear-b1/report.json)) | CPUExecutionProvider | 1.516 | 0.104 | 2.834 | 3.209 | 61.02 |
-| mlp-b1 ([JSON](macos-arm64/mlp-b1/report.json)) | CPUExecutionProvider | 1.605 | 0.104 | 3.500 | 4.002 | 61.27 |
-| mlp-b16 ([JSON](macos-arm64/mlp-b16/report.json)) | CPUExecutionProvider | 1.646 | 0.105 | 4.416 | 4.959 | 61.19 |
-| mlp-b16 ([JSON](macos-arm64/mlp-b16/report.json)) | CoreMLExecutionProvider | 36.385 | 4.930 | 42.125 | 47.419 | 69.38 |
-| mlp-b64 ([JSON](macos-arm64/mlp-b64/report.json)) | CPUExecutionProvider | 1.864 | 0.151 | 5.791 | 7.502 | 61.52 |
-| residual-b16 ([JSON](macos-arm64/residual-b16/report.json)) | CPUExecutionProvider | 1.823 | 0.125 | 6.209 | 6.625 | 61.33 |
+| linear-b1 ([JSON](macos-arm64/linear-b1/report.json)) | CPUExecutionProvider | 1.600 | 0.124 | 2.833 | 3.167 | 61.20 |
+| mlp-b1 ([JSON](macos-arm64/mlp-b1/report.json)) | CPUExecutionProvider | 1.764 | 0.117 | 3.583 | 4.125 | 61.16 |
+| mlp-b16 ([JSON](macos-arm64/mlp-b16/report.json)) | CPUExecutionProvider | 1.538 | 0.111 | 4.375 | 5.000 | 61.09 |
+| mlp-b16 ([JSON](macos-arm64/mlp-b16/report.json)) | CoreMLExecutionProvider | 36.740 | 4.812 | 42.125 | 48.711 | 69.30 |
+| mlp-b64 ([JSON](macos-arm64/mlp-b64/report.json)) | CPUExecutionProvider | 1.697 | 0.115 | 5.750 | 6.167 | 61.17 |
+| residual-b16 ([JSON](macos-arm64/residual-b16/report.json)) | CPUExecutionProvider | 1.762 | 0.126 | 6.208 | 6.667 | 61.27 |
 
 ## Interpretation
 

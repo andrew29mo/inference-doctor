@@ -29,6 +29,8 @@ MUTATIONS = [
     ("ignored_stage_rss", "src/inference_doctor/runner.py", '*memory["rss_bytes_by_stage"].values())', '0)', D + "test_memory_budget_includes_every_observed_stage"),
 ]
 REAL_MUTATIONS = [
+    ("accepted_inconsistent_dataset_accuracy", "src/inference_doctor/runner.py", 'and evidence["accuracy"] == evidence["correct"] / dataset_metadata["rows"]', 'and True', 'test_dataset.DatasetTests.test_controller_rejects_contradictory_actual_worker_evidence'),
+    ("unchecked_dataset_order", "src/inference_doctor/dataset.py", 'if not np.array_equal(ids, self.ids) or len(predicted) != self.rows:', 'if len(predicted) != self.rows:', 'test_dataset.DatasetTests.test_actual_pass_rejects_skipped_repeated_and_reordered_batches'),
     ("wrong_export_softmax_axis", "examples/digits/prepare.py", 'name="softmax", axis=1)', 'name="softmax", axis=0)', 'test_dataset.DatasetTests.test_actual_worker_scores_full_dataset_at_all_batch_sizes'),
     ("unchecked_dataset_timed_outputs", "src/inference_doctor/dataset.py", '            validate(outputs, expected)', '            if not timed:\n                validate(outputs, expected)', 'test_dataset.DatasetTests.test_timed_tail_only_corruption_is_detected_by_formal_worker'),
     ("omitted_final_dataset_row", "src/inference_doctor/dataset.py", '            predictions.append(predicted)', '            predictions.append(predicted[:-1] if timed and subset.stop == self.rows else predicted)', 'test_dataset.DatasetTests.test_actual_worker_scores_full_dataset_at_all_batch_sizes'),

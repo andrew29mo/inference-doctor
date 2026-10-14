@@ -110,8 +110,21 @@ def checked_worker(config, timeout, output_names):
                 valid = (valid and evidence["valid_rows"] == dataset_metadata["rows"]
                          and evidence["calls"] == batches
                          and evidence["correct"] == dataset_metadata["reference_correct"]
+                         and evidence["accuracy"] == evidence["correct"] / dataset_metadata["rows"]
+                         and math.isfinite(evidence["validated_wall_ms"]) and evidence["validated_wall_ms"] > 0
                          and evidence["sample_ids_sha256"] == dataset_metadata["sample_ids_sha256"]
                          and evidence["predictions_sha256"] == dataset_metadata["reference_predictions_sha256"])
+            valid = valid and dataset["evaluation"]["inference_ms"] is None
+            for index, evidence in enumerate(passes):
+                elapsed = sum(samples[index * batches:(index + 1) * batches])
+                valid = (valid and math.isclose(evidence["inference_ms"], elapsed, rel_tol=1e-12)
+                         and evidence["validated_wall_ms"] >= elapsed)
+            memory = result["memory"]
+            observations = [memory["process_high_water_rss_bytes"], memory["parent_sampled_peak_rss_bytes"],
+                            *memory["rss_bytes_by_stage"].values()]
+            valid = valid and bool(memory["rss_bytes_by_stage"]) and all(type(v) is int and v > 0 for v in observations)
+            if config["mode"] == "profile":
+                valid = valid and profile["dataset_evaluation"] == dataset["evaluation"]
         if not valid:
             raise ValueError("Incomplete worker evidence")
     except (KeyError, TypeError, ValueError, IndexError):

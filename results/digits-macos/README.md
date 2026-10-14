@@ -8,14 +8,14 @@ All cases share identical ONNX model, input, reference and label artifacts. Four
 
 | Maximum batch | Calls/pass | Final rows | Requested primary | Correct | Inference µs/example | Validated wall µs/example | Peak worker RSS MiB |
 |---:|---:|---:|---|---:|---:|---:|---:|
-| 1 | 450 | 1 | CPUExecutionProvider | 436/450 | 4.162 | 31.702 | 62.05 |
-| 1 | 450 | 1 | CoreMLExecutionProvider | 436/450 | 17.931 | 42.742 | 70.08 |
-| 16 | 29 | 2 | CPUExecutionProvider | 436/450 | 0.328 | 2.188 | 61.44 |
-| 16 | 29 | 2 | CoreMLExecutionProvider | 436/450 | 3.075 | 5.336 | 69.91 |
-| 64 | 8 | 2 | CPUExecutionProvider | 436/450 | 0.117 | 0.754 | 61.67 |
-| 64 | 8 | 2 | CoreMLExecutionProvider | 436/450 | 1.210 | 1.938 | 70.30 |
-| 128 | 4 | 66 | CPUExecutionProvider | 436/450 | 0.079 | 0.446 | 61.61 |
-| 128 | 4 | 66 | CoreMLExecutionProvider | 436/450 | 0.723 | 1.175 | 70.30 |
+| 1 | 450 | 1 | CPUExecutionProvider | 436/450 | 4.163 | 31.664 | 62.17 |
+| 1 | 450 | 1 | CoreMLExecutionProvider | 436/450 | 18.118 | 43.055 | 70.16 |
+| 16 | 29 | 2 | CPUExecutionProvider | 436/450 | 0.335 | 2.253 | 61.62 |
+| 16 | 29 | 2 | CoreMLExecutionProvider | 436/450 | 3.032 | 5.257 | 69.91 |
+| 64 | 8 | 2 | CPUExecutionProvider | 436/450 | 0.114 | 0.757 | 61.48 |
+| 64 | 8 | 2 | CoreMLExecutionProvider | 436/450 | 1.158 | 1.887 | 70.08 |
+| 128 | 4 | 66 | CPUExecutionProvider | 436/450 | 0.076 | 0.435 | 61.53 |
+| 128 | 4 | 66 | CoreMLExecutionProvider | 436/450 | 0.694 | 1.099 | 70.25 |
 
 Reported host: Apple M5 Pro, Darwin 27.0.1, arm64.
 

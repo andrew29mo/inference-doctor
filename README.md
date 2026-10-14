@@ -95,6 +95,8 @@ python tools/run_mutations.py --real-model
 
 Tests exercise the installed CLI and production worker with real ORT sessions. They challenge all outputs and the final batch row, deliberate timed-only corruption, invalid inputs, missing providers, budgets, timeouts and report consistency. Ten core deliberately faulty source variants must fail behavioral assertions; a source-hash mismatch alone does not count as detection. CI runs on Linux and macOS; its timing smoke tests are not performance gates.
 
+The [real-model review](docs/REAL_MODEL_REVIEW.md) covers training isolation, full/tail batch coverage and CPU/CoreML comparison limits. The optional full mutation suite adds six dataset/export/training faults, including inconsistent accuracy evidence and reordered batches.
+
 The controller snapshots inputs, performs ONNX preflight and launches independent measurement/profile workers. The worker validates inputs, runs ORT and checks outputs. The controller computes summaries and conservative diagnoses, then writes escaped static HTML and JSON. [Development and verification details](CONTRIBUTING.md).
 
 ## Limits and license
