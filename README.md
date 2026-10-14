@@ -103,4 +103,6 @@ The controller snapshots inputs, performs ONNX preflight and launches independen
 
 The MVP measures labelled classification accuracy in dataset mode; it does not measure concurrent service load, sustained thermal behavior, physical accelerator assignment, device/helper-process memory, or production readiness. It supports a fixed input set or a finite labelled dataset per invocation, with no external ONNX weight files, custom provider options, string/sequence/map tensors, I/O binding or Windows RSS accounting.
 
-No project license has been selected. Dependency licenses remain their own; no license from another repository is implied.
+No project license has been selected for the original code or trained weights. Making this repository public would not itself grant an open-source license. GitHub's public-repository viewing/forking rights are separate; see [GitHub's licensing guidance](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository). Dependency and source-data licenses remain their own; see [third-party notices](THIRD_PARTY_NOTICES.md). No license from another repository is implied.
+
+The [pre-publication review](docs/PUBLICATION_REVIEW.md) records verification scope and remaining limits. Repository visibility is a separate owner decision.
