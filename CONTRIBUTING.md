@@ -18,7 +18,7 @@ If package source changes, its hash changes. Regenerate the recorded suite with 
 
 The suite deliberately retains original synthetic reference values as JSON. Exact NPZ reconstruction verifies the measured reference hash; cross-platform NumPy regeneration is compared numerically under fixed suite-policy tolerances, rather than demanding bit-identical BLAS results. Tests reject both reference tampering and recomputation errors beyond tolerance.
 
-The repository has no project license selected yet. Do not assume this code is licensed under the licenses of its dependencies or sibling projects.
+The original code, documentation and trained weight state use the [MIT License](LICENSE). Keep its copyright and permission notice when redistributing copies or substantial portions. Preserve the [third-party notices](THIRD_PARTY_NOTICES.md); source-data and dependency licenses are separate and are not replaced by MIT.
 
 Source mutation checks run targeted behavioral tests against isolated copies of the actual package and tools. The unchanged baseline must pass, and each deliberately faulty version must fail by assertion rather than import error or stale-source-hash rejection. Policy fixtures that relabel CPU computations test controller behavior only; they are not accelerator measurements.
 

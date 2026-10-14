@@ -1,5 +1,7 @@
 # Pre-publication review
 
+**License follow-up (2026-10-14):** The owner subsequently authorized the [MIT License](../LICENSE) for the original code, documentation and trained weight state. README, contributor guidance, third-party notices and package metadata now reflect MIT. Source data and dataset-derived fixture values retain their separate CC BY 4.0 terms where applicable; dependency licenses remain unchanged. The repository remains Private. The observations below describe the earlier, pre-license review and build, not the current license state.
+
 Reviewed on 2026-10-14, starting from `347dfaa`. The repository remains Private; this review does not authorize changing visibility or assigning a license.
 
 ## Corrections

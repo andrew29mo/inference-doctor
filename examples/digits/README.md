@@ -42,4 +42,6 @@ python examples/digits/prepare.py --train --output examples/generated/retrained-
 
 Optimizer floating-point behavior may vary across platforms. Retraining is not required to reproduce inference comparisons: all providers and batch sizes use the exact retained state and exported model. Changes to a retained model require a separate reviewed update to policy and measurements.
 
+The original example code and retained trained weight state use the [MIT License](../../LICENSE). Digits source data and dataset-derived fixture values retain their separate CC BY 4.0 terms where applicable; see [data attribution and third-party notices](../../THIRD_PARTY_NOTICES.md).
+
 [All measured batch sizes](../../results/digits-macos/README.md) · [Data attribution](../../THIRD_PARTY_NOTICES.md)

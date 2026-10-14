@@ -11,4 +11,4 @@ Changes for this experiment: a fixed stratified split of the bundled subset, nor
 
 scikit-learn and SciPy use BSD licenses; NumPy, ONNX, ONNX Runtime and the other dependencies retain their respective upstream licenses. They are installed as dependencies; their source is not vendored here.
 
-The repository's original code and trained weight state have no project license selected. The dataset's license does not assign a license to the original code or imply endorsement by its authors.
+The repository's original code, documentation and trained weight state are licensed under the [MIT License](LICENSE), Copyright (c) 2026 Andrew Yuan. This grant does not relicense the Digits source data, dataset-derived fixture values or other third-party materials, and does not imply endorsement by the dataset authors. Preserve the dataset attribution, CC BY 4.0 link and change description above when redistributing dataset-derived materials. Dependencies retain their upstream licenses.
