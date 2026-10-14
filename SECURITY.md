@@ -22,3 +22,5 @@ Actions use read-only repository tokens, pinned and explicitly allowed action re
 Only the explicitly allowed official action repositories may run, and their workflow references must use full commit SHAs. Dependabot may propose a new pinned revision within those allowed repositories without a separate policy edit; adding a different action repository requires an explicit allowlist change. Review dependency and action changes before merging. SHA pinning alone does not establish that an action is safe.
 
 Repository protections are server-side settings and can change independently of Git history. This policy is not a guarantee that no vulnerabilities or credential leaks exist. Source-data and dependency licenses remain governed by their respective notices.
+
+The security hardening update pins setuptools 83.0.0 to address [GHSA-h35f-9h28-mq5c](https://github.com/advisories/GHSA-h35f-9h28-mq5c), which concerns file exclusions while building source distributions on normalization-sensitive filesystems. Historical measurement records retain their original dependency versions; they were not rewritten as measurements of the patched environment.
