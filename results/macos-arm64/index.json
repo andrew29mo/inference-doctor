@@ -1,0 +1,45 @@
+{
+  "description": "Original synthetic graphs, actual ORT execution, independent NumPy reference.",
+  "cases": [
+    {
+      "name": "linear-b1",
+      "kind": "linear",
+      "batch": 1,
+      "report": "linear-b1/report.json",
+      "status": "passed",
+      "exit_code": 0
+    },
+    {
+      "name": "mlp-b1",
+      "kind": "mlp",
+      "batch": 1,
+      "report": "mlp-b1/report.json",
+      "status": "passed",
+      "exit_code": 0
+    },
+    {
+      "name": "mlp-b16",
+      "kind": "mlp",
+      "batch": 16,
+      "report": "mlp-b16/report.json",
+      "status": "passed",
+      "exit_code": 0
+    },
+    {
+      "name": "mlp-b64",
+      "kind": "mlp",
+      "batch": 64,
+      "report": "mlp-b64/report.json",
+      "status": "passed",
+      "exit_code": 0
+    },
+    {
+      "name": "residual-b16",
+      "kind": "residual",
+      "batch": 16,
+      "report": "residual-b16/report.json",
+      "status": "passed",
+      "exit_code": 0
+    }
+  ]
+}

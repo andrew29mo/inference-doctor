@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.DS_Store
+.env
+.env.*
+AGENTS.md
+results/local/
+examples/generated/
+*.onnx
+*.npz

@@ -1,0 +1,10 @@
+# Python 3.12; runtime and transitive dependencies used for the recorded suite.
+numpy==1.26.4
+onnx==1.23.2
+onnxruntime==1.31.0
+psutil==7.0.0
+flatbuffers==25.12.19
+ml_dtypes==0.5.4
+packaging==26.3
+protobuf==7.36.2
+typing_extensions==4.16.0

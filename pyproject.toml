@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inference-doctor"
+version = "0.1.0"
+description = "Evidence-based ONNX inference deployment diagnostics"
+requires-python = ">=3.12"
+dependencies = ["numpy==1.26.4", "onnx==1.23.2", "onnxruntime==1.31.0", "psutil==7.0.0"]
+
+[project.scripts]
+inference-doctor = "inference_doctor.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
