@@ -7,10 +7,15 @@ from pathlib import Path
 import re
 import subprocess
 import tempfile
+import sys
+
+import numpy as np
 
 from inference_doctor.runner import artifact, source_hash
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "tools"))
+from reference_evidence import load_reference
 spec = importlib.util.spec_from_file_location("make_examples", ROOT / "tools/make_examples.py")
 generator = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(generator)
@@ -36,10 +41,25 @@ def verify_summary(actual, values):
         require(math.isclose(actual[key], value, rel_tol=1e-12, abs_tol=1e-12), f"Invalid summary: {key}")
 
 
-def verify_report(report, fixture):
+def verify_report(report, fixture, reference_path):
     require(report["source_sha256"] == source_hash(), "Report source hash is stale")
-    for key, name in [("model", "model.onnx"), ("inputs", "inputs.npz"), ("reference", "reference.npz")]:
+    for key, name in [("model", "model.onnx"), ("inputs", "inputs.npz")]:
         require(report["artifacts"][key] == artifact(fixture / name), f"Fixture differs: {key}")
+    # The measured reference is retained exactly. Recomputing matrix products on
+    # a different BLAS/architecture need not produce bit-identical float32 bits.
+    canonical = load_reference(reference_path)
+    with tempfile.TemporaryDirectory() as directory:
+        restored = Path(directory) / "reference.npz"
+        np.savez(restored, **canonical)
+        require(report["artifacts"]["reference"] == artifact(restored), "Recorded reference integrity differs")
+    with np.load(fixture / "reference.npz", allow_pickle=False) as regenerated:
+        require(set(regenerated.files) == set(canonical), "Reference output names differ")
+        for name, expected in canonical.items():
+            actual = regenerated[name]
+            require(actual.shape == expected.shape and actual.dtype == expected.dtype, "Reference tensor metadata differs")
+            require(np.isfinite(expected).all(), "Nonfinite canonical reference")
+            require(np.allclose(actual, expected, rtol=report["settings"]["rtol"], atol=report["settings"]["atol"]),
+                    f"Independent recomputed reference differs beyond tolerance: {name}")
     settings = report["settings"]
     for provider in report["providers"]:
         if "error" in provider:
@@ -85,7 +105,7 @@ def main():
                 "Recorded settings differ from results overview")
         with tempfile.TemporaryDirectory() as directory:
             fixture = generator.generate(directory, case["kind"], case["batch"])
-            verify_report(report, fixture)
+            verify_report(report, fixture, path.parent / "reference.json")
         require(case["status"] == report["status"], "Index status differs")
         require(case["exit_code"] == (2 if report["status"] == "failed" else 0), "Index exit code differs")
         require(path.with_suffix(".html").exists(), "Missing HTML report")

@@ -15,4 +15,6 @@ Tests invoke the installed production CLI and worker with actual ONNX Runtime se
 
 If package source changes, its hash changes. Regenerate the recorded suite with the revised source before the evidence tests and publication check can pass. Do not edit old numbers to match a claim. Keep generated models/NPZ files, local results, environments, credentials, personal instructions, raw logs and machine paths out of Git. The publication scanner is a basic heuristic, not a guarantee of secret detection.
 
+The suite deliberately retains original synthetic reference values as JSON. Exact NPZ reconstruction verifies the measured reference hash; cross-platform NumPy regeneration is compared numerically under declared tolerances, rather than demanding bit-identical BLAS results. Tests reject both reference tampering and recomputation errors beyond tolerance.
+
 The repository has no project license selected yet. Do not assume this code is licensed under the licenses of its dependencies or sibling projects.

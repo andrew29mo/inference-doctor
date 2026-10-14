@@ -7,6 +7,7 @@ import subprocess
 import sys
 
 from make_examples import generate
+from reference_evidence import save_reference
 
 
 def main():
@@ -24,6 +25,8 @@ def main():
         case = f"{kind}-b{batch}"
         fixture = generate(Path("examples/generated") / case, kind, batch)
         destination = output / case
+        destination.mkdir(parents=True, exist_ok=True)
+        save_reference(fixture / "reference.npz", destination / "reference.json")
         command = [sys.executable, "-m", "inference_doctor", str(fixture / "model.onnx"),
                    "--inputs", str(fixture / "inputs.npz"), "--reference", str(fixture / "reference.npz"),
                    "--output", str(destination), "--iterations", str(args.iterations), "--warmup", "50",

@@ -29,13 +29,15 @@ Session creation and first-use results include visible trial variability; caches
 
 ## Reports
 
-- [linear-b1 HTML](macos-arm64/linear-b1/report.html) · [JSON](macos-arm64/linear-b1/report.json) · status `passed`
-- [mlp-b1 HTML](macos-arm64/mlp-b1/report.html) · [JSON](macos-arm64/mlp-b1/report.json) · status `passed`
-- [mlp-b16 HTML](macos-arm64/mlp-b16/report.html) · [JSON](macos-arm64/mlp-b16/report.json) · status `passed`
-- [mlp-b64 HTML](macos-arm64/mlp-b64/report.html) · [JSON](macos-arm64/mlp-b64/report.json) · status `passed`
-- [residual-b16 HTML](macos-arm64/residual-b16/report.html) · [JSON](macos-arm64/residual-b16/report.json) · status `passed`
+- [linear-b1 HTML](macos-arm64/linear-b1/report.html) · [JSON](macos-arm64/linear-b1/report.json) · [original reference](macos-arm64/linear-b1/reference.json) · status `passed`
+- [mlp-b1 HTML](macos-arm64/mlp-b1/report.html) · [JSON](macos-arm64/mlp-b1/report.json) · [original reference](macos-arm64/mlp-b1/reference.json) · status `passed`
+- [mlp-b16 HTML](macos-arm64/mlp-b16/report.html) · [JSON](macos-arm64/mlp-b16/report.json) · [original reference](macos-arm64/mlp-b16/reference.json) · status `passed`
+- [mlp-b64 HTML](macos-arm64/mlp-b64/report.html) · [JSON](macos-arm64/mlp-b64/report.json) · [original reference](macos-arm64/mlp-b64/reference.json) · status `passed`
+- [residual-b16 HTML](macos-arm64/residual-b16/report.html) · [JSON](macos-arm64/residual-b16/report.json) · [original reference](macos-arm64/residual-b16/reference.json) · status `passed`
 
 Download/open HTML locally; GitHub does not render standalone HTML reports as a hosted application.
+
+Original synthetic reference tensors are retained losslessly as JSON and must reconstruct the measured NPZ hash exactly. Cross-platform NumPy recomputation is checked numerically at the declared tolerances, because BLAS rounding can differ. Model/input hashes still require exact equality.
 
 Regenerate with `python tools/measure_suite.py --output results/macos-arm64 --include-coreml` on an appropriately configured Mac, then `python tools/render_results.py`. New runs will differ. Review changes and verify with `python tools/check_project.py`; do not expect exact timing reproduction.
 

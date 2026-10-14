@@ -52,6 +52,8 @@ Provider initialization and inference failures are structured errors; raw runtim
 
 No default performance or memory threshold is invented. Passing does not certify production suitability. Source hashes identify the package's `.py` files; fixture artifact hashes identify exact binary files. `tools/check_project.py` regenerates fixtures, verifies source provenance, recomputes recorded summaries, checks validation counts and scans tracked files. This checks evidence consistency; it cannot prove past hardware events from JSON alone.
 
+The recorded synthetic suite also retains lossless reference tensors in `reference.json`. Reconstructing the original NPZ must match its recorded hash exactly. The generator's independent NumPy reference is checked numerically against those retained tensors using the same declared tolerances: different BLAS/architectures can round matrix products differently. Model and input hashes still require exact equality. These synthetic reference values are intentional measurement artifacts; arbitrary user NPZ contents are not automatically embedded in normal CLI reports.
+
 ## Official references
 
 - [ORT Python API](https://onnxruntime.ai/docs/api/python/api_summary.html)

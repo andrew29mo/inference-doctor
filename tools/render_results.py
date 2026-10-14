@@ -41,8 +41,10 @@ def render():
               "## Reports", ""]
     for case in index["cases"]:
         lines.append(f'- [{case["name"]} HTML](macos-arm64/{case["name"]}/report.html) · '
-                     f'[JSON](macos-arm64/{case["name"]}/report.json) · status `{case["status"]}`')
+                     f'[JSON](macos-arm64/{case["name"]}/report.json) · '
+                     f'[original reference](macos-arm64/{case["name"]}/reference.json) · status `{case["status"]}`')
     lines += ["", "Download/open HTML locally; GitHub does not render standalone HTML reports as a hosted application.", "",
+              "Original synthetic reference tensors are retained losslessly as JSON and must reconstruct the measured NPZ hash exactly. Cross-platform NumPy recomputation is checked numerically at the declared tolerances, because BLAS rounding can differ. Model/input hashes still require exact equality.", "",
               "Regenerate with `python tools/measure_suite.py --output results/macos-arm64 --include-coreml` on an appropriately configured Mac, then `python tools/render_results.py`. New runs will differ. Review changes and verify with `python tools/check_project.py`; do not expect exact timing reproduction.", "",
               "[Full methodology](../docs/METHODOLOGY.md) · [Generator](../tools/make_examples.py) · [Suite runner](../tools/measure_suite.py)", ""]
     return "\n".join(lines)

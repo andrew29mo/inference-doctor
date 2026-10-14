@@ -5,6 +5,8 @@ from pathlib import Path
 import tempfile
 import unittest
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("check_project", ROOT / "tools/check_project.py")
 checker = importlib.util.module_from_spec(spec)
@@ -23,10 +25,12 @@ class EvidenceTests(unittest.TestCase):
         report = json.loads(path.read_text())
         with tempfile.TemporaryDirectory() as directory:
             fixture = checker.generator.generate(directory, "mlp", 16)
-            checker.verify_report(report, fixture)
+            canonical_path = path.parent / "reference.json"
+            checker.verify_report(report, fixture, canonical_path)
             mutations = [
                 lambda r: r.update(source_sha256="wrong"),
                 lambda r: r["artifacts"]["inputs"].update(sha256="wrong"),
+                lambda r: r["artifacts"]["reference"].update(sha256="wrong"),
                 lambda r: r["providers"][0]["runs"][0]["correctness"].update(checked_calls=1),
                 lambda r: r["providers"][0]["runs"][0]["latency_samples_ms"].pop(),
                 lambda r: r["providers"][0]["summary"]["pooled_warm_latency_ms"].update(p95=999),
@@ -37,7 +41,35 @@ class EvidenceTests(unittest.TestCase):
                 changed = copy.deepcopy(report)
                 mutation(changed)
                 with self.assertRaises(ValueError):
-                    checker.verify_report(changed, fixture)
+                    checker.verify_report(changed, fixture, canonical_path)
+
+    def test_cross_platform_roundoff_keeps_exact_recorded_reference_integrity(self):
+        path = ROOT / "results/macos-arm64/mlp-b16/report.json"
+        report = json.loads(path.read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = checker.generator.generate(directory, "mlp", 16)
+            with np.load(fixture / "reference.npz") as archive:
+                arrays = {k: archive[k] for k in archive.files}
+            arrays["Y"][0, 0] = np.nextafter(arrays["Y"][0, 0], np.float32(np.inf))
+            np.savez(fixture / "reference.npz", **arrays)
+            checker.verify_report(report, fixture, path.parent / "reference.json")
+            arrays["Y"][0, 0] += 1
+            np.savez(fixture / "reference.npz", **arrays)
+            with self.assertRaises(ValueError):
+                checker.verify_report(report, fixture, path.parent / "reference.json")
+
+    def test_retained_reference_tampering_is_rejected(self):
+        path = ROOT / "results/macos-arm64/mlp-b16/report.json"
+        report = json.loads(path.read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture = checker.generator.generate(root / "fixture", "mlp", 16)
+            reference = json.loads((path.parent / "reference.json").read_text())
+            reference["tensors"][0]["values"][-1][-1] += 1
+            tampered = root / "reference.json"
+            tampered.write_text(json.dumps(reference))
+            with self.assertRaisesRegex(ValueError, "integrity"):
+                checker.verify_report(report, fixture, tampered)
 
 
 if __name__ == "__main__":
