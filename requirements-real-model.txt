@@ -1,6 +1,6 @@
 # Optional training, installed-dataset and independent sklearn reference tools.
 -r requirements-lock.txt
-scipy==1.13.1
-scikit-learn==1.6.1
-joblib==1.4.2
-threadpoolctl==3.6.0
+scipy==1.18.1
+scikit-learn==1.9.1
+joblib==1.6.0
+threadpoolctl==3.7.0
